@@ -32,7 +32,7 @@ const ChangePassword = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`https://eaglevision.onrender.com/api/v1/users/change-password`, {
+      const response = await fetch(`https://eaglesvision2.onrender.com/api/v1/users/change-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

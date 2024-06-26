@@ -25,7 +25,7 @@ const AddDepositWithdrawal = () => {
   useEffect(() => {
     const token = localStorage.getItem("token"); // Replace 'your_token_key' with the actual key you use to store the token
 
-    fetch(`https://eaglevision.onrender.com/api/v1/customers/${id}`, {
+    fetch(`https://eaglesvision2.onrender.com/api/v1/customers/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -49,7 +49,7 @@ const AddDepositWithdrawal = () => {
   useEffect(() => {
     const token = localStorage.getItem("token"); // Replace 'your_token_key' with the actual key you use to store the token
 
-    fetch(`https://eaglevision.onrender.com/api/v1/users/${cookies.userId}`, {
+    fetch(`https://eaglesvision2.onrender.com/api/v1/users/${cookies.userId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -98,7 +98,7 @@ const AddDepositWithdrawal = () => {
 
     try {
       const response = await fetch(
-        `https://eaglevision.onrender.com/api/v1${postEndpoint}`,
+        `https://eaglesvision2.onrender.com/api/v1${postEndpoint}`,
         {
           method: "POST",
           headers: {
@@ -132,7 +132,7 @@ const AddDepositWithdrawal = () => {
     }
   };
   useEffect(() => {
-    fetch("https://eaglevision.onrender.com/api/v1/users", {
+    fetch("https://eaglesvision2.onrender.com/api/v1/users", {
       headers: {
         Authorization: `Bearer ${token}`,
       },

@@ -9,7 +9,7 @@ const UsersList = () => {
 
 
   useEffect(() => {
-    fetch("https://eaglevision.onrender.com/api/v1/users", {
+    fetch("https://eaglesvision2.onrender.com/api/v1/users", {
       headers: {
         Authorization: `Bearer ${token}`,
       },

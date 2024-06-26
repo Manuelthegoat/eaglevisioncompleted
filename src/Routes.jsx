@@ -31,6 +31,7 @@ import Expenses from "./Pages/Expenses";
 import AddExpense from "./Pages/AddExpense";
 import EditLoan from "./Pages/EditLoan";
 import EditCustomer from "./Pages/EditCustomer";
+import Updateloan from "./Pages/Updateloan";
 
 const Routing = () => {
   return (
@@ -79,6 +80,7 @@ const Routing = () => {
         <Route path="/edit-loan/:id" element={<EditLoan />} />
         <Route path="/customer-details/:id" element={<CustomerDetails />} />
         <Route path="/edit-customer/:id" element={<EditCustomer />} />
+        <Route path="/update-loan/:id" element={<Updateloan />} />
       </Routes>
     </>
   );

@@ -5,7 +5,6 @@ import { ToastContainer, toast } from "react-toastify";
 import ReactPaginate from "react-paginate";
 import Swal from "sweetalert2";
 
-
 const SavingsList = () => {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,7 +20,7 @@ const SavingsList = () => {
   const pagesVisited = pageNumber * customersPerPage;
   const token = localStorage.getItem("token");
   useEffect(() => {
-    fetch("https://eaglevision.onrender.com/api/v1/customers", {
+    fetch("https://eaglesvision2.onrender.com/api/v1/customers", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -39,7 +38,8 @@ const SavingsList = () => {
         setAllCustomers(data.data);
         setDisplayedCustomers(
           data.data.slice(pagesVisited, pagesVisited + customersPerPage)
-        );      })
+        );
+      })
       .catch((error) => {
         console.log("Error fetching data: ", error);
         toast.error("Customer Failed To Fetched");
@@ -62,16 +62,19 @@ const SavingsList = () => {
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!"
+      confirmButtonText: "Yes, delete it!",
     }).then((result) => {
       if (result.isConfirmed) {
         setDeleting(true);
-        fetch(`https://eaglevision.onrender.com/api/v1/customers/${customerId}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
+        fetch(
+          `https://eaglesvision2.onrender.com/api/v1/customers/${customerId}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
           .then((response) => {
             if (!response.ok) {
               throw new Error("Network response was not ok");
@@ -114,7 +117,9 @@ const SavingsList = () => {
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
     const filteredCustomers = allCustomers.filter((customer) =>
-      customer.accountNumber.toLowerCase().includes(event.target.value.toLowerCase())
+      customer.accountNumber
+        .toLowerCase()
+        .includes(event.target.value.toLowerCase())
     );
     setDisplayedCustomers(filteredCustomers);
   };
@@ -130,8 +135,6 @@ const SavingsList = () => {
     const options = { year: "numeric", month: "short", day: "numeric" };
     return new Date(dateString).toDateString(undefined, options);
   };
-
-  
 
   return (
     <>
@@ -238,7 +241,9 @@ const SavingsList = () => {
                       <strong>{index + 1 + pagesVisited}</strong>
                     </td>
                     <td>
-                      <Link  to={`/customer-profile/${customer._id}`}>{customer.name}</Link>
+                      <Link to={`/customer-profile/${customer._id}`}>
+                        {customer.name}
+                      </Link>
                     </td>
                     <td>{customer.accountNumber}</td>
                     <td>{customer.customersPhoneNo}</td>
@@ -294,16 +299,16 @@ const SavingsList = () => {
               </tbody>
             </table>
             <ReactPaginate
-                previousLabel={"Previous"}
-                nextLabel={"Next"}
-                pageCount={pageCount}
-                onPageChange={changePage}
-                containerClassName={"pagination-container"}
-                previousLinkClassName={"pagination-button"}
-                nextLinkClassName={"pagination-button"}
-                pageClassName={"pagination-button"}
-                activeClassName={"active"}
-              />
+              previousLabel={"Previous"}
+              nextLabel={"Next"}
+              pageCount={pageCount}
+              onPageChange={changePage}
+              containerClassName={"pagination-container"}
+              previousLinkClassName={"pagination-button"}
+              nextLinkClassName={"pagination-button"}
+              pageClassName={"pagination-button"}
+              activeClassName={"active"}
+            />
           </div>
         </div>
       </div>

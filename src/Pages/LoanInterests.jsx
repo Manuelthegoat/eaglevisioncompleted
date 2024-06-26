@@ -15,7 +15,7 @@ const LoanInterests = () => {
         setLoading(true);
 
         const response = await fetch(
-          "https://eaglevision.onrender.com/api/v1/loans", {
+          "https://eaglesvision2.onrender.com/api/v1/loans", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -30,7 +30,7 @@ const LoanInterests = () => {
           const customerId = loan.customer;
           if (customerId) {
             const customerResponse = await fetch(
-              `https://eaglevision.onrender.com/api/v1/customers/${customerId}`, {
+              `https://eaglesvision2.onrender.com/api/v1/customers/${customerId}`, {
                 headers: {
                   Authorization: `Bearer ${token}`,
                 },

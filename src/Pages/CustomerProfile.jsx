@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Loader from "../Components/Loader/Loader";
 import { ToastContainer, toast } from "react-toastify";
+import ReactPaginate from "react-paginate";
+import Swal from "sweetalert2";
 
 import * as XLSX from "xlsx";
 
@@ -13,6 +15,13 @@ const CustomerProfile = () => {
   const [loans, setLoans] = useState([]);
   const [customerData, setCustomerData] = useState(null);
   const [loanProfile, setLoanProfile] = useState(null);
+  const [allCustomers, setAllCustomers] = useState([]); // stores all fetched data
+  const [displayedCustomers, setDisplayedCustomers] = useState([]); // stores data currently displayed in table
+  const [pageNumber, setPageNumber] = useState(0);
+
+  const customersPerPage = 10;
+  const pagesVisited = pageNumber * customersPerPage;
+  const token = localStorage.getItem("token");
 
   const { id } = useParams();
   useEffect(() => {
@@ -23,7 +32,8 @@ const CustomerProfile = () => {
         setLoading(true);
 
         const response = await fetch(
-          "https://eaglevision.onrender.com/api/v1/loans", {
+          "https://eaglesvision2.onrender.com/api/v1/loans",
+          {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -38,7 +48,8 @@ const CustomerProfile = () => {
             const token = localStorage.getItem("token");
 
             const customerResponse = await fetch(
-              `https://eaglevision.onrender.com/api/v1/customers/${customerId}`, {
+              `https://eaglesvision2.onrender.com/api/v1/customers/${customerId}`,
+              {
                 headers: {
                   Authorization: `Bearer ${token}`,
                 },
@@ -67,7 +78,7 @@ const CustomerProfile = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    fetch(`https://eaglevision.onrender.com/api/v1/customers/${id}`, {
+    fetch(`https://eaglesvision2.onrender.com/api/v1/customers/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -91,7 +102,8 @@ const CustomerProfile = () => {
     const token = localStorage.getItem("token");
 
     fetch(
-      `https://eaglevision.onrender.com/api/v1/customers/${id}/transactions`, {
+      `https://eaglesvision2.onrender.com/api/v1/customers/${id}/transactions`,
+      {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -106,22 +118,32 @@ const CustomerProfile = () => {
       .then((data) => {
         console.log("Fetched Specific Customer Data:", data);
         setTransactions(data);
+        setDisplayedCustomers(
+          data.slice(pagesVisited, pagesVisited + customersPerPage)
+        );
       })
       .catch((error) =>
         console.log("Error fetching specific customer data: ", error)
       )
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, pageNumber]);
+
+  const pageCount = Math.ceil(transactions.length / customersPerPage);
+
+  const changePage = ({ selected }) => {
+    setPageNumber(selected);
+  };
   const handleModeChange = (event) => {
     setSelectedMode(event.target.value);
   };
-  const filteredTransactions = transactions.filter((transact) => {
+  const filteredTransactions = displayedCustomers.filter((transact) => {
     if (selectedMode === "all") {
       return true;
     } else {
       return transact.modeOfPayment === selectedMode;
     }
   });
+
   useEffect(() => {
     // Find the loan item where customer field matches id
     const matchingLoan = loans.find((loan) => loan.customer === id);
@@ -263,7 +285,8 @@ const CustomerProfile = () => {
                   </div>
                   <div class="col">
                     <a class="btn btn-primary mb-1 me-1">
-                      Available Balance: {addCommas(customerDetails?.accountBalance)}
+                      Available Balance:{" "}
+                      {addCommas(customerDetails?.accountBalance)}
                     </a>{" "}
                   </div>
                 </div>
@@ -342,7 +365,7 @@ const CustomerProfile = () => {
                         <td>
                           {transact.description ? transact.description : "N/A"}
                         </td>
-                       
+
                         <td>
                           {transact.choose === "Debit" ? (
                             <>
@@ -384,9 +407,12 @@ const CustomerProfile = () => {
                             ? transact.collectedBy?.toUpperCase()
                             : "N/A"}
                         </td>
-                        <td> {transact.uploadedBy
+                        <td>
+                          {" "}
+                          {transact.uploadedBy
                             ? transact.uploadedBy?.toUpperCase()
-                            : "N/A"}</td>
+                            : "N/A"}
+                        </td>
                         <td>{new Date(transact.createdAt).toDateString()}</td>
                         <td>{new Date(transact.updatedAt).toDateString()}</td>
                         <td>
@@ -442,6 +468,17 @@ const CustomerProfile = () => {
                     ))}
                   </tbody>
                 </table>
+                <ReactPaginate
+                  previousLabel={"Previous"}
+                  nextLabel={"Next"}
+                  pageCount={pageCount}
+                  onPageChange={changePage}
+                  containerClassName={"pagination-container"}
+                  previousLinkClassName={"pagination-button"}
+                  nextLinkClassName={"pagination-button"}
+                  pageClassName={"pagination-button"}
+                  activeClassName={"active"}
+                />
               </div>
             </div>
           </div>

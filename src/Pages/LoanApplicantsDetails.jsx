@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import Loader from "../Components/Loader/Loader";
 import { ToastContainer, toast } from "react-toastify";
 import * as XLSX from "xlsx";
+import ReactPaginate from "react-paginate";
+import Swal from "sweetalert2";
 
 const LoanApplicantsDetails = () => {
   const [loading, setLoading] = useState(true);
@@ -10,11 +12,19 @@ const LoanApplicantsDetails = () => {
   const [loanApplicantsDetails, setLoanApplicantsDetails] = useState(null);
   const [repayments, setRepayments] = useState([]);
   const [customerDetails, setCustomerDetails] = useState(null);
+  const [allCustomers, setAllCustomers] = useState([]); // stores all fetched data
+  const [displayedCustomers, setDisplayedCustomers] = useState([]); // stores data currently displayed in table
+  const [pageNumber, setPageNumber] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery2, setSearchQuery2] = useState("");
+
+  const customersPerPage = 10;
+  const pagesVisited = pageNumber * customersPerPage;
 
   const { id } = useParams();
   useEffect(() => {
     const token = localStorage.getItem("token");
-    fetch(`https://eaglevision.onrender.com/api/v1/loans/${id}`, {
+    fetch(`https://eaglesvision2.onrender.com/api/v1/loans/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -31,7 +41,8 @@ const LoanApplicantsDetails = () => {
 
         // fetch customer details using the id from loanApplicantsDetails.customer
         return fetch(
-          `https://eaglevision.onrender.com/api/v1/customers/${data.data?.customer}`, {
+          `https://eaglesvision2.onrender.com/api/v1/customers/${data.data?.customer}`,
+          {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -60,7 +71,8 @@ const LoanApplicantsDetails = () => {
     // Fetch repayments using the customer id
     if (customerDetails) {
       fetch(
-        `https://eaglevision.onrender.com/api/v1/loans/customer/${loanApplicantsDetails?.customer}/loans`, {
+        `https://eaglesvision2.onrender.com/api/v1/loans/customer/${loanApplicantsDetails?.customer}/loans`,
+        {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -76,13 +88,24 @@ const LoanApplicantsDetails = () => {
         .then((repaymentsData) => {
           console.log("Fetched Repayments Data:", repaymentsData.data);
           setRepayments(repaymentsData.data);
+          setDisplayedCustomers(
+            repaymentsData.data.slice(
+              pagesVisited,
+              pagesVisited + customersPerPage
+            )
+          );
         })
         .catch((error) => {
           console.log("Error fetching repayments data: ", error);
           toast.error("Repayments Failed To Fetched");
         });
     }
-  }, [customerDetails]);
+  }, [customerDetails, pageNumber]);
+  const pageCount = Math.ceil(repayments.length / customersPerPage);
+
+  const changePage = ({ selected }) => {
+    setPageNumber(selected);
+  };
 
   function capitalizeFirstLetter(word) {
     return word?.charAt(0)?.toUpperCase() + word?.slice(1);
@@ -288,31 +311,32 @@ const LoanApplicantsDetails = () => {
                       <th>Interest Amount</th>
                       <th>Balance</th>
                       <th>Uploaded By</th>
+                      <th>Start Date</th>
+                      <th>End Date</th>
                       <th>Created At</th>
                       <th>Updated At</th>
+                      <th>Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {repayments &&
-                      repayments.map((repayment) => (
+                    {displayedCustomers &&
+                      displayedCustomers.map((repayment) => (
                         <tr key={repayment._id}>
                           <td>
-                            {new Date(
-                              repayment.paymentDate
-                            ).toDateString()}
+                            {new Date(repayment.repaymentDate).toDateString()}
                           </td>
-                          <td>
-                            {repayment.description}
-                          </td>
+                          <td>{repayment.description}</td>
                           <td>{repayment.modeOfPayment}</td>
                           <td>
                             &#8358;
                             {repayment.status === "withdrawn" ? (
                               <>
-                              {addCommas(repayment.amount?.toLocaleString("en-US", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }))}
+                                {addCommas(
+                                  repayment.amount?.toLocaleString("en-US", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })
+                                )}
                               </>
                             ) : (
                               <>--------</>
@@ -323,10 +347,12 @@ const LoanApplicantsDetails = () => {
                             &#8358;{" "}
                             {repayment.status === "deposited" ? (
                               <>
-                              {addCommas(repayment.amount?.toLocaleString("en-US", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              }))}
+                                {addCommas(
+                                  repayment.amount?.toLocaleString("en-US", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                  })
+                                )}
                               </>
                             ) : (
                               <>--------</>
@@ -336,15 +362,40 @@ const LoanApplicantsDetails = () => {
                           <td>&#8358;{addCommas(repayment.balance)}</td>
                           <td>{repayment.collectedBy}</td>
                           <td>
+                            {new Date(repayment.loanStartDate).toDateString()}
+                          </td>
+                          <td>
+                            {new Date(repayment.loanEndDate).toDateString()}
+                          </td>
+                          <td>
                             {new Date(repayment.createdAt).toDateString()}
                           </td>
                           <td>
                             {new Date(repayment.updatedAt).toDateString()}
                           </td>
+                          <td>
+                          <Link
+                            to={`/update-loan/${repayment._id}`}
+                            class="btn btn-primary"
+                          >
+                            Edit
+                          </Link>
+                          </td>
                         </tr>
                       ))}
                   </tbody>
                 </table>
+                <ReactPaginate
+                  previousLabel={"Previous"}
+                  nextLabel={"Next"}
+                  pageCount={pageCount}
+                  onPageChange={changePage}
+                  containerClassName={"pagination-container"}
+                  previousLinkClassName={"pagination-button"}
+                  nextLinkClassName={"pagination-button"}
+                  pageClassName={"pagination-button"}
+                  activeClassName={"active"}
+                />
               </div>
             </div>
           </div>
