@@ -1,4 +1,4 @@
-https://eaglesvision1.onrender.comimport React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Loader from "../Components/Loader/Loader";
