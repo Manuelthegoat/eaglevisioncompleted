@@ -47,7 +47,7 @@ const EditLoan = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
   
-    fetch(`https://eaglesvision1.onrender.com/api/v1/loans/${id}`, {
+    fetch(`https://eaglevision3.onrender.com/api/v1/loans/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -64,7 +64,7 @@ const EditLoan = () => {
         setLoan(data.data);
   
         // Now, fetch customer data using the loan.customer value
-        return fetch(`https://eaglesvision1.onrender.com/api/v1/customers/${data.data.customer}`, {
+        return fetch(`https://eaglevision3.onrender.com/api/v1/customers/${data.data.customer}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -135,7 +135,7 @@ const token = localStorage.getItem("token");
 
     try {
         const response = await fetch(
-          `https://eaglesvision1.onrender.com/api/v1/loans/${id}`,
+          `https://eaglevision3.onrender.com/api/v1/loans/${id}`,
           {
             method: "PATCH",
             headers: {

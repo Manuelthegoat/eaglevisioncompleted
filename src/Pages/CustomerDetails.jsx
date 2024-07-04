@@ -8,7 +8,7 @@ const CustomerDetails = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    fetch(`https://eaglesvision1.onrender.com/api/v1/customers/${id}`, {
+    fetch(`https://eaglevision3.onrender.com/api/v1/customers/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

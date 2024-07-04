@@ -20,7 +20,7 @@ const CustomerList = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    fetch("https://eaglesvision1.onrender.com/api/v1/customers", {
+    fetch("https://eaglevision3.onrender.com/api/v1/customers", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -69,7 +69,7 @@ const CustomerList = () => {
         const token = localStorage.getItem("token");
   
         setDeleting(true);
-        fetch(`https://eaglesvision1.onrender.com/api/v1/customers/${customerId}`, {
+        fetch(`https://eaglevision3.onrender.com/api/v1/customers/${customerId}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,

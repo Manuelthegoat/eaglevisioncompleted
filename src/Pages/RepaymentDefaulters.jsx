@@ -13,7 +13,7 @@ const RepaymentDefaulters = () => {
     const token = localStorage.getItem("token");
 
     fetch(
-      "https://eaglesvision1.onrender.com/api/v1/loans/defaulters", {
+      "https://eaglevision3.onrender.com/api/v1/loans/defaulters", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

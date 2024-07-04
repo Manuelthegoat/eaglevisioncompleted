@@ -14,7 +14,7 @@ const RepayLoan = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`https://eaglesvision1.onrender.com/api/v1/loans/${id}`)
+    fetch(`https://eaglevision3.onrender.com/api/v1/loans/${id}`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -27,7 +27,7 @@ const RepayLoan = () => {
 
         // fetch customer details using the id from loanApplicantsDetails.customer
         return fetch(
-          `https://eaglesvision1.onrender.com/api/v1/customers/${data.data.customer}`
+          `https://eaglevision3.onrender.com/api/v1/customers/${data.data.customer}`
         );
       })
       .then((response) => {
@@ -65,7 +65,7 @@ const RepayLoan = () => {
 
     try {
       const response = await fetch(
-        `https://eaglesvision1.onrender.com/api/v1/loans/withdrawals`,
+        `https://eaglevision3.onrender.com/api/v1/loans/withdrawals`,
         {
           method: "POST",
           headers: {
