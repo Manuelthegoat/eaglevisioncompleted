@@ -65,7 +65,7 @@ const AddCustomer = () => {
     const token = localStorage.getItem("token");
     try {
       const response = await fetch(
-        "https://eaglesvision2.onrender.com/api/v1/customers",
+        "https://eaglesvision1.onrender.com",
         {
           method: "POST",
           headers: {
