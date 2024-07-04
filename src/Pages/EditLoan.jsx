@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Loader from "../Components/Loader/Loader";
-import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
-import { CookiesProvider, useCookies } from "react-cookie";
-
-
-const LoanApplication = () => {
+const EditLoan = () => {
   const [customers, setCustomers] = useState([]);
-  const navigate = useNavigate()
+  const [loan, setLoan] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { id } = useParams();
 
   const [customerSelection, setCustomerSelection] = useState("");
   const [loanTitle, setLoanTitle] = useState("");
@@ -42,35 +40,14 @@ const LoanApplication = () => {
   const [guarantor2HouseAddress, setGuarantor2HouseAddress] = useState("");
   const [guarantor2OfficeAddress, setGuarantor2OfficeAddress] = useState("");
   const [interestRate, setinterestRate] = useState("");
-  const [cookies] = useCookies(["userId"]);
+  const [name, setName] = useState("");
+  const navigate = useNavigate()
 
-  const [userss, setUserss] = useState([]);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token"); // Replace 'your_token_key' with the actual key you use to store the token
-
-    fetch(`https://eaglesvision2.onrender.com/api/v1/users/${cookies.userId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("Fetched Logged In User Data:", data.data);
-        setUserss(data.data);
-      })
-      .catch((error) => console.log("Error fetching Logged In data: ", error))
-      .finally(() => setLoading(false));
-  }, []);
+  
   useEffect(() => {
     const token = localStorage.getItem("token");
-
-    fetch("https://eaglesvision2.onrender.com/api/v1/customers", {
+  
+    fetch(`https://eaglesvision1.onrender.com/api/v1/loans/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -82,102 +59,110 @@ const LoanApplication = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Fetched Data:", data.data);
-        toast.success("Customer Fetched Successfully");
+        console.log("Fetched Sing:", data.data);
+        toast.success("Loan Details Fetched Successfully");
+        setLoan(data.data);
+  
+        // Now, fetch customer data using the loan.customer value
+        return fetch(`https://eaglesvision1.onrender.com/api/v1/customers/${data.data.customer}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Fetched Cuuu:", data.data);
+        toast.success("Loan Customer");
         setCustomers(data.data);
       })
       .catch((error) => {
         console.log("Error fetching data: ", error);
-        toast.error("Customer Failed To Fetched");
+        toast.error("Failed Loan Customer");
       })
       .finally(() => setLoading(false)); // Set loading to false here, after success or error
-  }, []);
+  }, [id]);
+  
+  function capitalizeFirstLetter(word) {
+    return word?.charAt(0)?.toUpperCase() + word?.slice(1);
+  }
+  console.log("check am now", customers?.name)
 
   const handleSubmit = async (event) => {
     event.preventDefault(); // Prevents default form submission behaviour
-
-    const selectedCustomer = customers.find(customer => customer._id === customerSelection);
-
-    // Check if a customer is selected
-    if (!selectedCustomer) {
-      toast.error("Please select a customer");
-      return;
-    }
-
     // Combine all the useState data into one object
-    const payload = {
-      customerId: customerSelection,
-      name: selectedCustomer.name, // Set the selected customer's name here
-      amount: loanAmount,
-      disbursementAmount: loanAmount,
-      type: 'disbursement',
-      interestRate: interestRate,
-      loanStartDate: loanStartDate,
-      loanEndDate: loanEndDate,
-      repaymentSchedule: repaymentSchedule,
-      repaymentDate: loanEndDate,
-      loanTitle: loanTitle,
-      phoneNo1: phone1,
-      phoneNo2: phone2,
-      houseAddress: houseAddress,
-      officeAddress: officeAddress,
-      maritalStatus: maritalStatus,
-      currentOccupationOfApplicant: currentOccupation,
-      spouseName: spouseName,
-      spousePhoneNo: spousePhone,
-      spouseOccupation: spouseOccupation,
-      spouseOfficeAddress: spouseOfficeAddress,
-      loanDuration: loanDuration,
-      LoanRequestedAmount: loanAmount,
-      firstGuarantorsName: guarantor1Name,
-      firstGuarantorsSex: guarantor1Sex,
-      firstGuarantorsDateOfBirth: guarantor1Dob,
-      firstGuarantorsPhoneNumber: guarantor1Phone,
-      firstGuarantorsOccupation: guarantor1Occupation,
-      firstGuarantorsHouseAddress: guarantor1HouseAddress,
-      firstGuarantorsOfficeAddress: guarantor1OfficeAddress,
-      secondGuarantorsName: guarantor2Name,
-      secondGuarantorsSex: guarantor2Sex,
-      secondGuarantorsDateOfBirth: guarantor2Dob,
-      secondGuarantorsPhoneNumber: guarantor2Phone,
-      secondGuarantorsOccupation: guarantor2Occupation,
-      secondGuarantorsHouseAddress: guarantor2HouseAddress,
-      secondGuarantorsOfficeAddress: guarantor2OfficeAddress,
-      uploadedBy: userss.firstName+" "+ userss.lastName,
-    };
-    const token = localStorage.getItem("token");
+    const payload = {};
+    if (customerSelection !== "") payload.customerId = customerSelection;
+     payload.name= customers?.name; // Set the selected customer's name here
+
+if (loanTitle !== "") payload.loanTitle = loanTitle;
+if (phone1 !== "") payload.phoneNo1 = phone1;
+if (phone2 !== "") payload.phoneNo2 = phone2;
+if (houseAddress !== "") payload.houseAddress = houseAddress;
+if (officeAddress !== "") payload.officeAddress = officeAddress;
+if (maritalStatus !== "") payload.maritalStatus = maritalStatus;
+if (currentOccupation !== "") payload.currentOccupationOfApplicant = currentOccupation;
+if (spouseName !== "") payload.spouseName = spouseName;
+if (spousePhone !== "") payload.spousePhoneNo = spousePhone;
+if (spouseOccupation !== "") payload.spouseOccupation = spouseOccupation;
+if (spouseOfficeAddress !== "") payload.spouseOfficeAddress = spouseOfficeAddress;
+if (loanAmount !== "") payload.amount = loanAmount;
+if (loanDuration !== "") payload.loanDuration = loanDuration;
+if (interestRate !== "") payload.interestRate = interestRate;
+if (loanStartDate !== null) payload.loanStartDate = loanStartDate;
+if (loanEndDate !== null) payload.loanEndDate = loanEndDate;
+if (repaymentSchedule !== "") payload.repaymentSchedule = repaymentSchedule;
+if (guarantor1Name !== "") payload.firstGuarantorsName = guarantor1Name;
+if (guarantor1Sex !== "") payload.firstGuarantorsSex = guarantor1Sex;
+if (guarantor1Dob !== null) payload.firstGuarantorsDateOfBirth = guarantor1Dob;
+if (guarantor1Phone !== "") payload.firstGuarantorsPhoneNumber = guarantor1Phone;
+if (guarantor1Occupation !== "") payload.firstGuarantorsOccupation = guarantor1Occupation;
+if (guarantor1HouseAddress !== "") payload.firstGuarantorsHouseAddress = guarantor1HouseAddress;
+if (guarantor1OfficeAddress !== "") payload.firstGuarantorsOfficeAddress = guarantor1OfficeAddress;
+if (guarantor2Name !== "") payload.secondGuarantorsName = guarantor2Name;
+if (guarantor2Sex !== "") payload.secondGuarantorsSex = guarantor2Sex;
+if (guarantor2Dob !== null) payload.secondGuarantorsDateOfBirth = guarantor2Dob;
+if (guarantor2Phone !== "") payload.secondGuarantorsPhoneNumber = guarantor2Phone;
+if (guarantor2Occupation !== "") payload.secondGuarantorsOccupation = guarantor2Occupation;
+if (guarantor2HouseAddress !== "") payload.secondGuarantorsHouseAddress = guarantor2HouseAddress;
+if (guarantor2OfficeAddress !== "") payload.secondGuarantorsOfficeAddress = guarantor2OfficeAddress;
+const token = localStorage.getItem("token");
 
     try {
+        const response = await fetch(
+          `https://eaglesvision1.onrender.com/api/v1/loans/${id}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
 
-      const response = await fetch(
-        "https://eaglesvision2.onrender.com/api/v1/loans/disbursement",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-
-          },
-          body: JSON.stringify(payload), // Convert the JavaScript object to a JSON string
+            },
+            body: JSON.stringify(payload),
+          }
+        );
+    
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
         }
-      );
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
+    
+        const data = await response.json();
+    
+        // Handle successful put, maybe set a success message or redirect user
+        toast.success("Loan Application Edited Successfully!");
+        toast.success(data.message);
+        navigate('/loan-applicants')
+      } catch (error) {
+        // Handle errors, maybe display a message to the user
+        console.error("There was a problem with the PUT operation:", error);
+    
+        toast.error("An Error Occurred");
       }
-
-      const data = await response.json();
-
-      // Handle successful post, maybe set a success message or redirect user
-      toast.success("Application Submitted Successfully!");
-      navigate("/loan-applicants")
-
-    } catch (error) {
-      // Handle errors, maybe display a message to the user
-      console.error("There was a problem with the fetch operation:", error);
-      
-      toast.error("An existing loan already exists for this customer or Network Error");
-    }
   };
   return (
     <>
@@ -194,19 +179,7 @@ const LoanApplication = () => {
                 <div class="row">
                   <div class="mb-3 col-md-6">
                     <label class="form-label">Search and Select Customer</label>
-                    <select
-                      id="inputState"
-                      class="default-select form-control wide"
-                      value={customerSelection}
-                      onChange={(e) => setCustomerSelection(e.target.value)}
-                    >
-                      <option selected>Select Customer</option>
-                      {customers.map((customer, index) => (
-                        <>
-                          <option value={customer._id}>{customer.name}</option>
-                        </>
-                      ))}
-                    </select>
+                   <p>{capitalizeFirstLetter(customers?.name)}</p>
                   </div>
                   <div class="mb-3 col-md-6">
                     <label class="form-label">Loan Title</label>
@@ -214,7 +187,7 @@ const LoanApplication = () => {
                       type="text"
                       value={loanTitle}
                       onChange={(e) => setLoanTitle(e.target.value)}
-                      placeholder="loan Title"
+                      placeholder={loan.loanTitle}
                       class="form-control"
                     />
                   </div>
@@ -225,7 +198,7 @@ const LoanApplication = () => {
                       class="form-control"
                       value={phone1}
                       onChange={(e) => setPhone1(e.target.value)}
-                      placeholder="Phone NO 1"
+                      placeholder={loan.phoneNo1}
                     />
                   </div>
                   <div class="mb-3 col-md-6">
@@ -235,7 +208,7 @@ const LoanApplication = () => {
                       class="form-control"
                       value={phone2}
                       onChange={(e) => setPhone2(e.target.value)}
-                      placeholder="Phone NO 2"
+                      placeholder={loan.loanNoTitle}
                     />
                   </div>
                 </div>
@@ -247,14 +220,14 @@ const LoanApplication = () => {
                       class="form-control"
                       value={houseAddress}
                       onChange={(e) => setHouseAddress(e.target.value)}
-                      placeholder="House Address"
+                      placeholder={loan.houseAddress}
                     />
                   </div>
                   <div class="mb-3 col-md-12">
                     <label class="form-label">Office Address</label>
                     <input
                       type="text"
-                      placeholder="Office Address"
+                      placeholder={loan.officeAddress}
                       value={officeAddress}
                       onChange={(e) => setOfficeAddress(e.target.value)}
                       class="form-control"
@@ -284,7 +257,7 @@ const LoanApplication = () => {
                       type="text"
                       value={currentOccupation}
                       onChange={(e) => setCurrentOccupation(e.target.value)}
-                      placeholder="Current Occupation Of Applicant"
+                      placeholder={loan.currentOccupationOfApplicant}
                       class="form-control"
                     />
                   </div>
@@ -294,7 +267,7 @@ const LoanApplication = () => {
                     <label class="form-label">Spouse Name</label>
                     <input
                       type="text"
-                      placeholder="Spouse Name"
+                      placeholder={loan.spouseName}
                       value={spouseName}
                       onChange={(e) => setSpouseName(e.target.value)}
                       class="form-control"
@@ -306,7 +279,7 @@ const LoanApplication = () => {
                       type="number"
                       value={spousePhone}
                       onChange={(e) => setSpousePhone(e.target.value)}
-                      placeholder="Spouse Phone No"
+                      placeholder={loan.spousePhoneNo}
                       class="form-control"
                     />
                   </div>
@@ -314,7 +287,7 @@ const LoanApplication = () => {
                     <label class="form-label">Spouse Occupation</label>
                     <input
                       type="text"
-                      placeholder="Spouse Occupation"
+                      placeholder={loan.spouseOccupation}
                       value={spouseOccupation}
                       onChange={(e) => setSpouseOccupation(e.target.value)}
                       class="form-control"
@@ -324,7 +297,7 @@ const LoanApplication = () => {
                     <label class="form-label">Spouse Office Address</label>
                     <input
                       type="text"
-                      placeholder="Spouse Office Address"
+                      placeholder={loan.spouseOfficeAddress}
                       value={spouseOfficeAddress}
                       onChange={(e) => setSpouseOfficeAddress(e.target.value)}
                       class="form-control"
@@ -342,6 +315,7 @@ const LoanApplication = () => {
                         value={loanAmount}
                         onChange={(e) => setLoanAmount(e.target.value)}
                         class="form-control"
+                        placeholder={loan.totalLoanRecieved}
                       />
                     </div>
                   </div>
@@ -357,15 +331,6 @@ const LoanApplication = () => {
                       <option value={"onemonth"}>1 Month (30 Days)</option>
                       <option value={"twomonths"}>2 Month (60 Days)</option>
                       <option value={"threemonths"}>3 Month (90 Days)</option>
-                      <option value={"fourmonths"}>4 Month (120 Days)</option>
-                      <option value={"fivemonths"}>5 Month (150 Days)</option>
-                      <option value={"sixmonths"}>6 Month (180 Days)</option>
-                      <option value={"sevenmonths"}>7 Month (210 Days)</option>
-                      <option value={"eightmonths"}>8 Month (240 Days)</option>
-                      <option value={"ninemonths"}>9 Month (270 Days)</option>
-                      <option value={"tenmonths"}>10 Month (300 Days)</option>
-                      <option value={"elevenmonths"}>11 Month (330 Days)</option>
-                      <option value={"twelvemonths"}>12 Month (360 Days)</option>
                     </select>
                   </div>
                   <div class="mb-3 col-md-4">
@@ -377,6 +342,7 @@ const LoanApplication = () => {
                         value={interestRate}
                         onChange={(e) => setinterestRate(e.target.value)}
                         class="form-control"
+                        placeholder={loan.totalInterestAccured}
                       />
                     </div>
                   </div>
@@ -426,7 +392,7 @@ const LoanApplication = () => {
                     <label class="form-label">GUARANTOR'S Name</label>
                     <input
                       type="text"
-                      placeholder="GUARANTOR'S Name"
+                      placeholder={loan.firstGuarantorsName}
                       class="form-control"
                       value={guarantor1Name}
                       onChange={(e) => setGuarantor1Name(e.target.value)}
@@ -440,7 +406,6 @@ const LoanApplication = () => {
                       value={guarantor1Sex}
                       onChange={(e) => setGuarantor1Sex(e.target.value)}
                     >
-                      <option value={""}>Select sex</option>
                       <option value={"male"}>Male</option>
                       <option value={"female"}>Female</option>
                     </select>
@@ -458,7 +423,7 @@ const LoanApplication = () => {
                     <label class="form-label">Phone Number</label>
                     <input
                       type="text"
-                      placeholder="Phone No"
+                      placeholder={loan.firstGuarantorsPhoneNumber}
                       value={guarantor1Phone}
                       onChange={(e) => setGuarantor1Phone(e.target.value)}
                       class="form-control"
@@ -470,7 +435,7 @@ const LoanApplication = () => {
                       type="text"
                       value={guarantor1Occupation}
                       onChange={(e) => setGuarantor1Occupation(e.target.value)}
-                      placeholder="Occupation"
+                      placeholder={loan.firstGuarantorsOccupation}
                       class="form-control"
                     />
                   </div>
@@ -480,7 +445,7 @@ const LoanApplication = () => {
                     <label class="form-label">House Address</label>
                     <input
                       type="text"
-                      placeholder="House Address"
+                      placeholder={loan.firstGuarantorsHouseAddress}
                       value={guarantor1HouseAddress}
                       onChange={(e) =>
                         setGuarantor1HouseAddress(e.target.value)
@@ -492,7 +457,7 @@ const LoanApplication = () => {
                     <label class="form-label">Office Address</label>
                     <input
                       type="text"
-                      placeholder="House Address"
+                      placeholder={loan.firstGuarantorsOfficeAddress}
                       value={guarantor1OfficeAddress}
                       onChange={(e) =>
                         setGuarantor1OfficeAddress(e.target.value)
@@ -508,7 +473,7 @@ const LoanApplication = () => {
                     <label class="form-label">GUARANTOR'S Name</label>
                     <input
                       type="text"
-                      placeholder="GUARANTOR'S Name"
+                      placeholder={loan.secondGuarantorsName}
                       value={guarantor2Name}
                       onChange={(e) => setGuarantor2Name(e.target.value)}
                       class="form-control"
@@ -522,7 +487,6 @@ const LoanApplication = () => {
                       value={guarantor2Sex}
                       onChange={(e) => setGuarantor2Sex(e.target.value)}
                     >
-                      <option value={""}>SELECT SEX</option>
                       <option value={"male"}>Male</option>
                       <option value={"female"}>Female</option>
                     </select>
@@ -540,7 +504,7 @@ const LoanApplication = () => {
                     <label class="form-label">Phone Number</label>
                     <input
                       type="text"
-                      placeholder="Phone No"
+                      placeholder={loan.secondGuarantorsPhoneNumber}
                       value={guarantor2Phone}
                       onChange={(e) => setGuarantor2Phone(e.target.value)}
                       class="form-control"
@@ -550,7 +514,7 @@ const LoanApplication = () => {
                     <label class="form-label">Occupation</label>
                     <input
                       type="text"
-                      placeholder="Occupation"
+                      placeholder={loan.secondGuarantorsOccupation}
                       class="form-control"
                       value={guarantor2Occupation}
                       onChange={(e) => setGuarantor2Occupation(e.target.value)}
@@ -562,7 +526,7 @@ const LoanApplication = () => {
                     <label class="form-label">House Address</label>
                     <input
                       type="text"
-                      placeholder="House Address"
+                      placeholder={loan.secondGuarantorsHouseAddress}
                       class="form-control"
                       value={guarantor2HouseAddress}
                       onChange={(e) =>
@@ -574,7 +538,7 @@ const LoanApplication = () => {
                     <label class="form-label">Office Address</label>
                     <input
                       type="text"
-                      placeholder="House Address"
+                      placeholder={loan.secondGuarantorsOfficeAddress}
                       value={guarantor2OfficeAddress}
                       onChange={(e) =>
                         setGuarantor2OfficeAddress(e.target.value)
@@ -596,4 +560,4 @@ const LoanApplication = () => {
   );
 };
 
-export default LoanApplication;
+export default EditLoan;

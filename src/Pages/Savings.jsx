@@ -25,7 +25,7 @@ const Savings = () => {
 
       try {
         const response = await fetch(
-          `https://eaglesvision2.onrender.com/api/v1/transactions/totalDepositByCashByPaymentDate?startDate=${startDate}&endDate=${endDate}`, {
+          `https://eaglesvision1.onrender.com/api/v1/transactions/totalDepositByCashByPaymentDate?startDate=${startDate}&endDate=${endDate}`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -52,7 +52,7 @@ const Savings = () => {
     const token = localStorage.getItem("token");
 
     fetch(
-      `https://eaglesvision2.onrender.com/api/v1/transactions/totalDepositByCashByPaymentDate?startDate=2010-01-01&endDate=2050-01-01`, {
+      `https://eaglesvision1.onrender.com/api/v1/transactions/totalDepositByCashByPaymentDate?startDate=2010-01-01&endDate=2050-01-01`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -75,7 +75,7 @@ const Savings = () => {
   }, []);
   useEffect(() => {
     fetch(
-      `https://eaglesvision2.onrender.com/api/v1/transactions/totalWithdrawalsByTransferByPaymentDate?startDate=${startDate}&endDate=${endDate}`, {
+      `https://eaglesvision1.onrender.com/api/v1/transactions/totalWithdrawalsByTransferByPaymentDate?startDate=${startDate}&endDate=${endDate}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -98,7 +98,7 @@ const Savings = () => {
   }, [startDate, endDate]);
   useEffect(() => {
     fetch(
-      `https://eaglesvision2.onrender.com/api/v1/transactions/totalWithdrawalsByCashByPaymentDate?startDate=${startDate}&endDate=${endDate}`, {
+      `https://eaglesvision1.onrender.com/api/v1/transactions/totalWithdrawalsByCashByPaymentDate?startDate=${startDate}&endDate=${endDate}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -127,7 +127,7 @@ const Savings = () => {
     const startDate2 = today.toISOString().split("T")[0];
     const endDate2 = tomorrow.toISOString().split("T")[0];
     fetch(
-      `https://eaglesvision2.onrender.com/api/v1/transactions/totalDepositByTransferByPaymentDate?startDate=${startDate}&endDate=${endDate}`, {
+      `https://eaglesvision1.onrender.com/api/v1/transactions/totalDepositByTransferByPaymentDate?startDate=${startDate}&endDate=${endDate}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -150,7 +150,7 @@ const Savings = () => {
   }, [startDate, endDate]);
   useEffect(() => {
     fetch(
-      `https://eaglesvision2.onrender.com/api/v1/transactions/totalDepositByTransferByPaymentDate?startDate=2010-01-01&endDate=2050-01-01`, {
+      `https://eaglesvision1.onrender.com/api/v1/transactions/totalDepositByTransferByPaymentDate?startDate=2010-01-01&endDate=2050-01-01`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

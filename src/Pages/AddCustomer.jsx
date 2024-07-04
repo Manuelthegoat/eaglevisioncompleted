@@ -65,7 +65,7 @@ const AddCustomer = () => {
     const token = localStorage.getItem("token");
     try {
       const response = await fetch(
-        "https://eaglesvision2.onrender.com/api/v1/customers",
+        "https://eaglesvision1.onrender.com/api/v1/customers",
         {
           method: "POST",
           headers: {
@@ -98,7 +98,7 @@ const AddCustomer = () => {
   useEffect(() => {
     const token = localStorage.getItem("token"); // Replace 'your_token_key' with the actual key you use to store the token
 
-    fetch("https://eaglesvision2.onrender.com/api/v1/users", {
+    fetch("https://eaglesvision1.onrender.com/api/v1/users", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -123,7 +123,7 @@ const AddCustomer = () => {
   useEffect(() => {
     const token = localStorage.getItem("token"); // Replace 'your_token_key' with the actual key you use to store the token
 
-    fetch(`https://eaglesvision2.onrender.com/api/v1/users/${cookies.userId}`, {
+    fetch(`https://eaglesvision1.onrender.com/api/v1/users/${cookies.userId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

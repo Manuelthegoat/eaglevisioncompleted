@@ -32,7 +32,7 @@ const CustomerProfile = () => {
         setLoading(true);
 
         const response = await fetch(
-          "https://eaglesvision2.onrender.com/api/v1/loans",
+          "https://eaglesvision1.onrender.com/api/v1/loans",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -48,7 +48,7 @@ const CustomerProfile = () => {
             const token = localStorage.getItem("token");
 
             const customerResponse = await fetch(
-              `https://eaglesvision2.onrender.com/api/v1/customers/${customerId}`,
+              `https://eaglesvision1.onrender.com/api/v1/customers/${customerId}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,
@@ -78,7 +78,7 @@ const CustomerProfile = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    fetch(`https://eaglesvision2.onrender.com/api/v1/customers/${id}`, {
+    fetch(`https://eaglesvision1.onrender.com/api/v1/customers/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -102,7 +102,7 @@ const CustomerProfile = () => {
     const token = localStorage.getItem("token");
 
     fetch(
-      `https://eaglesvision2.onrender.com/api/v1/customers/${id}/transactions`,
+      `https://eaglesvision1.onrender.com/api/v1/customers/${id}/transactions`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

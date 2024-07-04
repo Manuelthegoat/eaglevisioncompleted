@@ -22,7 +22,7 @@ const Loans = () => {
     const token = localStorage.getItem("token");
 
     fetch(
-      `https://eaglesvision2.onrender.com/api/v1/loans/total-deposit-amount-by-cash?startDate=${startDate}&endDate=${endDate}`,
+      `https://eaglesvision1.onrender.com/api/v1/loans/total-deposit-amount-by-cash?startDate=${startDate}&endDate=${endDate}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -47,7 +47,7 @@ const Loans = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    fetch(`https://eaglesvision2.onrender.com/api/v1/loans/bank/recieved`, {
+    fetch(`https://eaglesvision1.onrender.com/api/v1/loans/bank/recieved`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -71,7 +71,7 @@ const Loans = () => {
     // Fetching all loans data
     const token = localStorage.getItem("token");
 
-    fetch("https://eaglesvision2.onrender.com/api/v1/loans", {
+    fetch("https://eaglesvision1.onrender.com/api/v1/loans", {
       headers: {
         Authorization: `Bearer ${token}`,
       },

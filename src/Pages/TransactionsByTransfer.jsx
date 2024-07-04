@@ -2,53 +2,22 @@ import React, { useState, useEffect } from "react";
 import Loader from "../Components/Loader/Loader";
 import * as XLSX from "xlsx";
 
-const AllTransactions = () => {
+const TransactionsByTransfer = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [AllTransactionsByCash, setAllTransactionsByCash] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const [displayedCustomers, setDisplayedCustomers] = useState([]);
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const token = localStorage.getItem("token");
 
-  const handleStartDateChange = (event) => {
-    setStartDate(event.target.value);
-  };
-
-  const handleEndDateChange = (event) => {
-    setEndDate(event.target.value);
-  };
-
-  const handleDateRangeFilter = () => {
-    const start = startDate ? new Date(startDate) : null;
-    const end = endDate ? new Date(endDate) : null;
-
-    const filteredCustomers = AllTransactionsByCash.filter((item) => {
-      const customerDate = new Date(item.paymentDate);
-
-      if (start && end) {
-        return customerDate >= start && customerDate <= end;
-      } else if (start) {
-        return customerDate >= start;
-      } else if (end) {
-        return customerDate <= end;
-      }
-
-      return true; // No date range selected, include all transactions
-    });
-
-    setDisplayedCustomers(filteredCustomers);
-  };
 
   useEffect(() => {
-    const token = localStorage.getItem("token"); // Replace 'your_token_key' with the actual key you use to store the token
-
     fetch(
-      "https://eaglesvision2.onrender.com/api/v1/transactions/transactions", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+      "https://eaglesvision1.onrender.com/api/v1/transactions/transactions/transfer", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     )
       .then((response) => {
         if (!response.ok) {
@@ -57,9 +26,8 @@ const AllTransactions = () => {
         return response.json();
       })
       .then((data) => {
-        const sortedTransactions = data.data?.reverse(); // Reverse the array to have the latest transaction first
-        setAllTransactionsByCash(sortedTransactions);
-        setDisplayedCustomers(sortedTransactions);
+        setAllTransactionsByCash(data.data);
+        setDisplayedCustomers(data.data);
       })
       .catch((error) => {
         setError(error.message);
@@ -113,32 +81,20 @@ const AllTransactions = () => {
       {loading && <Loader />}
       <div className="card">
         <div className="card-header">
-          <h4 class="card-title">All Transactions</h4>
+          <h4 class="card-title">Transactions By Cash</h4>
           <div class="d-flex align-items-center flex-wrap flex-sm-nowrap">
-            <div className="mb-3 mt-2 mx-sm-2">
-              <label className="sr-only">Start Date</label>
+            <div class="mb-3 mt-2 mx-sm-2">
+              <label class="sr-only">Search</label>
               <input
                 type="date"
-                className="form-control"
-                placeholder="Start Date"
-                onChange={handleStartDateChange}
-              />
+                class="form-control"
+                placeholder="Search"
+                onChange={handleDateChange}
+              />{" "}
             </div>
-            <div className="mb-3 mt-2 mx-sm-2">
-              <label className="sr-only">End Date</label>
-              <input
-                type="date"
-                className="form-control"
-                placeholder="End Date"
-                onChange={handleEndDateChange}
-              />
-            </div>
-            <button
-              type="button"
-              className="btn btn-primary mb-2"
-              onClick={handleDateRangeFilter}
-            >
-              Filter By Date Range
+            &nbsp;
+            <button type="submit" class="btn btn-primary mb-2">
+              Filter By Date
             </button>
           </div>
           <button
@@ -194,7 +150,7 @@ const AllTransactions = () => {
                       <tr key={index}>
                         {/* ... Table data */}
                         <td>{index + 1}</td>
-                        <td>{item.name || item.customer}</td>
+                        <td>{item.customer}</td>
                         <td>₦ {item.amount}</td>
                         <td>
                           {new Date(item.paymentDate).toDateString()}
@@ -206,7 +162,7 @@ const AllTransactions = () => {
                         </td>
                         <td>
                           {item.collectedBy === "" ||
-                            item.collectedBy == null ? (
+                          item.collectedBy == null ? (
                             <p>--------</p>
                           ) : (
                             item.collectedBy
@@ -226,4 +182,4 @@ const AllTransactions = () => {
   );
 };
 
-export default AllTransactions;
+export default TransactionsByTransfer;

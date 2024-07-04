@@ -34,7 +34,7 @@ const AddNewUser = () => {
 
     try {
       const response = await fetch(
-        "https://eaglesvision2.onrender.com/api/v1/users/register",
+        "https://eaglesvision1.onrender.com/api/v1/users/register",
         {
           method: "POST",
           headers: {

@@ -20,7 +20,7 @@ const SavingsList = () => {
   const pagesVisited = pageNumber * customersPerPage;
   const token = localStorage.getItem("token");
   useEffect(() => {
-    fetch("https://eaglesvision2.onrender.com/api/v1/customers", {
+    fetch("https://eaglesvision1.onrender.com/api/v1/customers", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -67,7 +67,7 @@ const SavingsList = () => {
       if (result.isConfirmed) {
         setDeleting(true);
         fetch(
-          `https://eaglesvision2.onrender.com/api/v1/customers/${customerId}`,
+          `https://eaglesvision1.onrender.com/api/v1/customers/${customerId}`,
           {
             method: "DELETE",
             headers: {

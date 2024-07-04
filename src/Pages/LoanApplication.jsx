@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import Loader from "../Components/Loader/Loader";
+import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
-const EditLoan = () => {
+import { CookiesProvider, useCookies } from "react-cookie";
+
+
+const LoanApplication = () => {
   const [customers, setCustomers] = useState([]);
-  const [loan, setLoan] = useState([]);
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(true);
-  const { id } = useParams();
 
   const [customerSelection, setCustomerSelection] = useState("");
   const [loanTitle, setLoanTitle] = useState("");
@@ -40,14 +42,14 @@ const EditLoan = () => {
   const [guarantor2HouseAddress, setGuarantor2HouseAddress] = useState("");
   const [guarantor2OfficeAddress, setGuarantor2OfficeAddress] = useState("");
   const [interestRate, setinterestRate] = useState("");
-  const [name, setName] = useState("");
-  const navigate = useNavigate()
+  const [cookies] = useCookies(["userId"]);
 
-  
+  const [userss, setUserss] = useState([]);
+
   useEffect(() => {
-    const token = localStorage.getItem("token");
-  
-    fetch(`https://eaglesvision2.onrender.com/api/v1/loans/${id}`, {
+    const token = localStorage.getItem("token"); // Replace 'your_token_key' with the actual key you use to store the token
+
+    fetch(`https://eaglesvision1.onrender.com/api/v1/users/${cookies.userId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -59,17 +61,20 @@ const EditLoan = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Fetched Sing:", data.data);
-        toast.success("Loan Details Fetched Successfully");
-        setLoan(data.data);
-  
-        // Now, fetch customer data using the loan.customer value
-        return fetch(`https://eaglesvision2.onrender.com/api/v1/customers/${data.data.customer}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        console.log("Fetched Logged In User Data:", data.data);
+        setUserss(data.data);
       })
+      .catch((error) => console.log("Error fetching Logged In data: ", error))
+      .finally(() => setLoading(false));
+  }, []);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    fetch("https://eaglesvision1.onrender.com/api/v1/customers", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -77,92 +82,102 @@ const EditLoan = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Fetched Cuuu:", data.data);
-        toast.success("Loan Customer");
+        console.log("Fetched Data:", data.data);
+        toast.success("Customer Fetched Successfully");
         setCustomers(data.data);
       })
       .catch((error) => {
         console.log("Error fetching data: ", error);
-        toast.error("Failed Loan Customer");
+        toast.error("Customer Failed To Fetched");
       })
       .finally(() => setLoading(false)); // Set loading to false here, after success or error
-  }, [id]);
-  
-  function capitalizeFirstLetter(word) {
-    return word?.charAt(0)?.toUpperCase() + word?.slice(1);
-  }
-  console.log("check am now", customers?.name)
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault(); // Prevents default form submission behaviour
-    // Combine all the useState data into one object
-    const payload = {};
-    if (customerSelection !== "") payload.customerId = customerSelection;
-     payload.name= customers?.name; // Set the selected customer's name here
 
-if (loanTitle !== "") payload.loanTitle = loanTitle;
-if (phone1 !== "") payload.phoneNo1 = phone1;
-if (phone2 !== "") payload.phoneNo2 = phone2;
-if (houseAddress !== "") payload.houseAddress = houseAddress;
-if (officeAddress !== "") payload.officeAddress = officeAddress;
-if (maritalStatus !== "") payload.maritalStatus = maritalStatus;
-if (currentOccupation !== "") payload.currentOccupationOfApplicant = currentOccupation;
-if (spouseName !== "") payload.spouseName = spouseName;
-if (spousePhone !== "") payload.spousePhoneNo = spousePhone;
-if (spouseOccupation !== "") payload.spouseOccupation = spouseOccupation;
-if (spouseOfficeAddress !== "") payload.spouseOfficeAddress = spouseOfficeAddress;
-if (loanAmount !== "") payload.amount = loanAmount;
-if (loanDuration !== "") payload.loanDuration = loanDuration;
-if (interestRate !== "") payload.interestRate = interestRate;
-if (loanStartDate !== null) payload.loanStartDate = loanStartDate;
-if (loanEndDate !== null) payload.loanEndDate = loanEndDate;
-if (repaymentSchedule !== "") payload.repaymentSchedule = repaymentSchedule;
-if (guarantor1Name !== "") payload.firstGuarantorsName = guarantor1Name;
-if (guarantor1Sex !== "") payload.firstGuarantorsSex = guarantor1Sex;
-if (guarantor1Dob !== null) payload.firstGuarantorsDateOfBirth = guarantor1Dob;
-if (guarantor1Phone !== "") payload.firstGuarantorsPhoneNumber = guarantor1Phone;
-if (guarantor1Occupation !== "") payload.firstGuarantorsOccupation = guarantor1Occupation;
-if (guarantor1HouseAddress !== "") payload.firstGuarantorsHouseAddress = guarantor1HouseAddress;
-if (guarantor1OfficeAddress !== "") payload.firstGuarantorsOfficeAddress = guarantor1OfficeAddress;
-if (guarantor2Name !== "") payload.secondGuarantorsName = guarantor2Name;
-if (guarantor2Sex !== "") payload.secondGuarantorsSex = guarantor2Sex;
-if (guarantor2Dob !== null) payload.secondGuarantorsDateOfBirth = guarantor2Dob;
-if (guarantor2Phone !== "") payload.secondGuarantorsPhoneNumber = guarantor2Phone;
-if (guarantor2Occupation !== "") payload.secondGuarantorsOccupation = guarantor2Occupation;
-if (guarantor2HouseAddress !== "") payload.secondGuarantorsHouseAddress = guarantor2HouseAddress;
-if (guarantor2OfficeAddress !== "") payload.secondGuarantorsOfficeAddress = guarantor2OfficeAddress;
-const token = localStorage.getItem("token");
+    const selectedCustomer = customers.find(customer => customer._id === customerSelection);
+
+    // Check if a customer is selected
+    if (!selectedCustomer) {
+      toast.error("Please select a customer");
+      return;
+    }
+
+    // Combine all the useState data into one object
+    const payload = {
+      customerId: customerSelection,
+      name: selectedCustomer.name, // Set the selected customer's name here
+      amount: loanAmount,
+      disbursementAmount: loanAmount,
+      type: 'disbursement',
+      interestRate: interestRate,
+      loanStartDate: loanStartDate,
+      loanEndDate: loanEndDate,
+      repaymentSchedule: repaymentSchedule,
+      repaymentDate: loanEndDate,
+      loanTitle: loanTitle,
+      phoneNo1: phone1,
+      phoneNo2: phone2,
+      houseAddress: houseAddress,
+      officeAddress: officeAddress,
+      maritalStatus: maritalStatus,
+      currentOccupationOfApplicant: currentOccupation,
+      spouseName: spouseName,
+      spousePhoneNo: spousePhone,
+      spouseOccupation: spouseOccupation,
+      spouseOfficeAddress: spouseOfficeAddress,
+      loanDuration: loanDuration,
+      LoanRequestedAmount: loanAmount,
+      firstGuarantorsName: guarantor1Name,
+      firstGuarantorsSex: guarantor1Sex,
+      firstGuarantorsDateOfBirth: guarantor1Dob,
+      firstGuarantorsPhoneNumber: guarantor1Phone,
+      firstGuarantorsOccupation: guarantor1Occupation,
+      firstGuarantorsHouseAddress: guarantor1HouseAddress,
+      firstGuarantorsOfficeAddress: guarantor1OfficeAddress,
+      secondGuarantorsName: guarantor2Name,
+      secondGuarantorsSex: guarantor2Sex,
+      secondGuarantorsDateOfBirth: guarantor2Dob,
+      secondGuarantorsPhoneNumber: guarantor2Phone,
+      secondGuarantorsOccupation: guarantor2Occupation,
+      secondGuarantorsHouseAddress: guarantor2HouseAddress,
+      secondGuarantorsOfficeAddress: guarantor2OfficeAddress,
+      uploadedBy: userss.firstName+" "+ userss.lastName,
+    };
+    const token = localStorage.getItem("token");
 
     try {
-        const response = await fetch(
-          `https://eaglesvision2.onrender.com/api/v1/loans/${id}`,
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
 
-            },
-            body: JSON.stringify(payload),
-          }
-        );
-    
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
+      const response = await fetch(
+        "https://eaglesvision1.onrender.com/api/v1/loans/disbursement",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+
+          },
+          body: JSON.stringify(payload), // Convert the JavaScript object to a JSON string
         }
-    
-        const data = await response.json();
-    
-        // Handle successful put, maybe set a success message or redirect user
-        toast.success("Loan Application Edited Successfully!");
-        toast.success(data.message);
-        navigate('/loan-applicants')
-      } catch (error) {
-        // Handle errors, maybe display a message to the user
-        console.error("There was a problem with the PUT operation:", error);
-    
-        toast.error("An Error Occurred");
+      );
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
       }
+
+      const data = await response.json();
+
+      // Handle successful post, maybe set a success message or redirect user
+      toast.success("Application Submitted Successfully!");
+      navigate("/loan-applicants")
+
+    } catch (error) {
+      // Handle errors, maybe display a message to the user
+      console.error("There was a problem with the fetch operation:", error);
+      
+      toast.error("An existing loan already exists for this customer or Network Error");
+    }
   };
   return (
     <>
@@ -179,7 +194,19 @@ const token = localStorage.getItem("token");
                 <div class="row">
                   <div class="mb-3 col-md-6">
                     <label class="form-label">Search and Select Customer</label>
-                   <p>{capitalizeFirstLetter(customers?.name)}</p>
+                    <select
+                      id="inputState"
+                      class="default-select form-control wide"
+                      value={customerSelection}
+                      onChange={(e) => setCustomerSelection(e.target.value)}
+                    >
+                      <option selected>Select Customer</option>
+                      {customers.map((customer, index) => (
+                        <>
+                          <option value={customer._id}>{customer.name}</option>
+                        </>
+                      ))}
+                    </select>
                   </div>
                   <div class="mb-3 col-md-6">
                     <label class="form-label">Loan Title</label>
@@ -187,7 +214,7 @@ const token = localStorage.getItem("token");
                       type="text"
                       value={loanTitle}
                       onChange={(e) => setLoanTitle(e.target.value)}
-                      placeholder={loan.loanTitle}
+                      placeholder="loan Title"
                       class="form-control"
                     />
                   </div>
@@ -198,7 +225,7 @@ const token = localStorage.getItem("token");
                       class="form-control"
                       value={phone1}
                       onChange={(e) => setPhone1(e.target.value)}
-                      placeholder={loan.phoneNo1}
+                      placeholder="Phone NO 1"
                     />
                   </div>
                   <div class="mb-3 col-md-6">
@@ -208,7 +235,7 @@ const token = localStorage.getItem("token");
                       class="form-control"
                       value={phone2}
                       onChange={(e) => setPhone2(e.target.value)}
-                      placeholder={loan.loanNoTitle}
+                      placeholder="Phone NO 2"
                     />
                   </div>
                 </div>
@@ -220,14 +247,14 @@ const token = localStorage.getItem("token");
                       class="form-control"
                       value={houseAddress}
                       onChange={(e) => setHouseAddress(e.target.value)}
-                      placeholder={loan.houseAddress}
+                      placeholder="House Address"
                     />
                   </div>
                   <div class="mb-3 col-md-12">
                     <label class="form-label">Office Address</label>
                     <input
                       type="text"
-                      placeholder={loan.officeAddress}
+                      placeholder="Office Address"
                       value={officeAddress}
                       onChange={(e) => setOfficeAddress(e.target.value)}
                       class="form-control"
@@ -257,7 +284,7 @@ const token = localStorage.getItem("token");
                       type="text"
                       value={currentOccupation}
                       onChange={(e) => setCurrentOccupation(e.target.value)}
-                      placeholder={loan.currentOccupationOfApplicant}
+                      placeholder="Current Occupation Of Applicant"
                       class="form-control"
                     />
                   </div>
@@ -267,7 +294,7 @@ const token = localStorage.getItem("token");
                     <label class="form-label">Spouse Name</label>
                     <input
                       type="text"
-                      placeholder={loan.spouseName}
+                      placeholder="Spouse Name"
                       value={spouseName}
                       onChange={(e) => setSpouseName(e.target.value)}
                       class="form-control"
@@ -279,7 +306,7 @@ const token = localStorage.getItem("token");
                       type="number"
                       value={spousePhone}
                       onChange={(e) => setSpousePhone(e.target.value)}
-                      placeholder={loan.spousePhoneNo}
+                      placeholder="Spouse Phone No"
                       class="form-control"
                     />
                   </div>
@@ -287,7 +314,7 @@ const token = localStorage.getItem("token");
                     <label class="form-label">Spouse Occupation</label>
                     <input
                       type="text"
-                      placeholder={loan.spouseOccupation}
+                      placeholder="Spouse Occupation"
                       value={spouseOccupation}
                       onChange={(e) => setSpouseOccupation(e.target.value)}
                       class="form-control"
@@ -297,7 +324,7 @@ const token = localStorage.getItem("token");
                     <label class="form-label">Spouse Office Address</label>
                     <input
                       type="text"
-                      placeholder={loan.spouseOfficeAddress}
+                      placeholder="Spouse Office Address"
                       value={spouseOfficeAddress}
                       onChange={(e) => setSpouseOfficeAddress(e.target.value)}
                       class="form-control"
@@ -315,7 +342,6 @@ const token = localStorage.getItem("token");
                         value={loanAmount}
                         onChange={(e) => setLoanAmount(e.target.value)}
                         class="form-control"
-                        placeholder={loan.totalLoanRecieved}
                       />
                     </div>
                   </div>
@@ -331,6 +357,15 @@ const token = localStorage.getItem("token");
                       <option value={"onemonth"}>1 Month (30 Days)</option>
                       <option value={"twomonths"}>2 Month (60 Days)</option>
                       <option value={"threemonths"}>3 Month (90 Days)</option>
+                      <option value={"fourmonths"}>4 Month (120 Days)</option>
+                      <option value={"fivemonths"}>5 Month (150 Days)</option>
+                      <option value={"sixmonths"}>6 Month (180 Days)</option>
+                      <option value={"sevenmonths"}>7 Month (210 Days)</option>
+                      <option value={"eightmonths"}>8 Month (240 Days)</option>
+                      <option value={"ninemonths"}>9 Month (270 Days)</option>
+                      <option value={"tenmonths"}>10 Month (300 Days)</option>
+                      <option value={"elevenmonths"}>11 Month (330 Days)</option>
+                      <option value={"twelvemonths"}>12 Month (360 Days)</option>
                     </select>
                   </div>
                   <div class="mb-3 col-md-4">
@@ -342,7 +377,6 @@ const token = localStorage.getItem("token");
                         value={interestRate}
                         onChange={(e) => setinterestRate(e.target.value)}
                         class="form-control"
-                        placeholder={loan.totalInterestAccured}
                       />
                     </div>
                   </div>
@@ -392,7 +426,7 @@ const token = localStorage.getItem("token");
                     <label class="form-label">GUARANTOR'S Name</label>
                     <input
                       type="text"
-                      placeholder={loan.firstGuarantorsName}
+                      placeholder="GUARANTOR'S Name"
                       class="form-control"
                       value={guarantor1Name}
                       onChange={(e) => setGuarantor1Name(e.target.value)}
@@ -406,6 +440,7 @@ const token = localStorage.getItem("token");
                       value={guarantor1Sex}
                       onChange={(e) => setGuarantor1Sex(e.target.value)}
                     >
+                      <option value={""}>Select sex</option>
                       <option value={"male"}>Male</option>
                       <option value={"female"}>Female</option>
                     </select>
@@ -423,7 +458,7 @@ const token = localStorage.getItem("token");
                     <label class="form-label">Phone Number</label>
                     <input
                       type="text"
-                      placeholder={loan.firstGuarantorsPhoneNumber}
+                      placeholder="Phone No"
                       value={guarantor1Phone}
                       onChange={(e) => setGuarantor1Phone(e.target.value)}
                       class="form-control"
@@ -435,7 +470,7 @@ const token = localStorage.getItem("token");
                       type="text"
                       value={guarantor1Occupation}
                       onChange={(e) => setGuarantor1Occupation(e.target.value)}
-                      placeholder={loan.firstGuarantorsOccupation}
+                      placeholder="Occupation"
                       class="form-control"
                     />
                   </div>
@@ -445,7 +480,7 @@ const token = localStorage.getItem("token");
                     <label class="form-label">House Address</label>
                     <input
                       type="text"
-                      placeholder={loan.firstGuarantorsHouseAddress}
+                      placeholder="House Address"
                       value={guarantor1HouseAddress}
                       onChange={(e) =>
                         setGuarantor1HouseAddress(e.target.value)
@@ -457,7 +492,7 @@ const token = localStorage.getItem("token");
                     <label class="form-label">Office Address</label>
                     <input
                       type="text"
-                      placeholder={loan.firstGuarantorsOfficeAddress}
+                      placeholder="House Address"
                       value={guarantor1OfficeAddress}
                       onChange={(e) =>
                         setGuarantor1OfficeAddress(e.target.value)
@@ -473,7 +508,7 @@ const token = localStorage.getItem("token");
                     <label class="form-label">GUARANTOR'S Name</label>
                     <input
                       type="text"
-                      placeholder={loan.secondGuarantorsName}
+                      placeholder="GUARANTOR'S Name"
                       value={guarantor2Name}
                       onChange={(e) => setGuarantor2Name(e.target.value)}
                       class="form-control"
@@ -487,6 +522,7 @@ const token = localStorage.getItem("token");
                       value={guarantor2Sex}
                       onChange={(e) => setGuarantor2Sex(e.target.value)}
                     >
+                      <option value={""}>SELECT SEX</option>
                       <option value={"male"}>Male</option>
                       <option value={"female"}>Female</option>
                     </select>
@@ -504,7 +540,7 @@ const token = localStorage.getItem("token");
                     <label class="form-label">Phone Number</label>
                     <input
                       type="text"
-                      placeholder={loan.secondGuarantorsPhoneNumber}
+                      placeholder="Phone No"
                       value={guarantor2Phone}
                       onChange={(e) => setGuarantor2Phone(e.target.value)}
                       class="form-control"
@@ -514,7 +550,7 @@ const token = localStorage.getItem("token");
                     <label class="form-label">Occupation</label>
                     <input
                       type="text"
-                      placeholder={loan.secondGuarantorsOccupation}
+                      placeholder="Occupation"
                       class="form-control"
                       value={guarantor2Occupation}
                       onChange={(e) => setGuarantor2Occupation(e.target.value)}
@@ -526,7 +562,7 @@ const token = localStorage.getItem("token");
                     <label class="form-label">House Address</label>
                     <input
                       type="text"
-                      placeholder={loan.secondGuarantorsHouseAddress}
+                      placeholder="House Address"
                       class="form-control"
                       value={guarantor2HouseAddress}
                       onChange={(e) =>
@@ -538,7 +574,7 @@ const token = localStorage.getItem("token");
                     <label class="form-label">Office Address</label>
                     <input
                       type="text"
-                      placeholder={loan.secondGuarantorsOfficeAddress}
+                      placeholder="House Address"
                       value={guarantor2OfficeAddress}
                       onChange={(e) =>
                         setGuarantor2OfficeAddress(e.target.value)
@@ -560,4 +596,4 @@ const token = localStorage.getItem("token");
   );
 };
 
-export default EditLoan;
+export default LoanApplication;
