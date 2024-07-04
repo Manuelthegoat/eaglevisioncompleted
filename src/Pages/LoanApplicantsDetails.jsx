@@ -323,13 +323,13 @@ const LoanApplicantsDetails = () => {
                       displayedCustomers.map((repayment) => (
                         <tr key={repayment._id}>
                           <td>
-                            {new Date(repayment.repaymentDate).toDateString()}
+                            {new Date(repayment.paymentDate).toDateString()}
                           </td>
                           <td>{repayment.description}</td>
                           <td>{repayment.modeOfPayment}</td>
                           <td>
                             &#8358;
-                            {repayment.status === "withdrawn" ? (
+                            {repayment.type === "withdrawal" ? (
                               <>
                                 {addCommas(
                                   repayment.amount?.toLocaleString("en-US", {
@@ -345,7 +345,7 @@ const LoanApplicantsDetails = () => {
 
                           <td>
                             &#8358;{" "}
-                            {repayment.status === "deposited" ? (
+                            {repayment.type === "deposit" || repayment.type === "disbursement" ? (
                               <>
                                 {addCommas(
                                   repayment.amount?.toLocaleString("en-US", {

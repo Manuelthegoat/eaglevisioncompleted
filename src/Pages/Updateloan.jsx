@@ -37,6 +37,7 @@ const Updateloan = () => {
     const payload = {};
     if (repaymentAmount !== "") payload.amount = repaymentAmount;
     if (interestRate !== "") payload.interestRate = interestRate;
+    if (loanStartDate !== "") payload.loanStartDate = loanStartDate;
     if (loanEndDate !== "") payload.loanEndDate = loanEndDate;
     if (repaymentDate !== "") payload.repaymentDate = repaymentDate;
     if (type !== "") payload.type = type;
@@ -117,7 +118,7 @@ const Updateloan = () => {
               <div class="basic-form">
                 <div>
                   <div class="row">
-                    <div class="mb-3 col-md-6">
+                    {/* <div class="mb-3 col-md-6">
                       <label class="form-label">Repayment Amount</label>
                       <input
                         type="number"
@@ -126,7 +127,7 @@ const Updateloan = () => {
                         value={repaymentAmount}
                         onChange={(e) => setRepaymentAmount(e.target.value)}
                       />
-                    </div>
+                    </div> */}
                     <div class="mb-3 col-md-6">
                       <label class="form-label">Type</label>
                       <select
@@ -140,7 +141,7 @@ const Updateloan = () => {
                       </select>
                     </div>
 
-                    <div class="mb-3 col-md-6">
+                    {/* <div class="mb-3 col-md-6">
                       <label class="form-label">Interest Amount</label>
                       <input
                         type="number"
@@ -149,7 +150,7 @@ const Updateloan = () => {
                         value={interestRate}
                         onChange={(e) => setInterestRate(e.target.value)}
                       />
-                    </div>
+                    </div> */}
                     <div class="mb-3 col-md-6">
                       <label class="form-label">Collected By</label>
 
@@ -204,7 +205,7 @@ const Updateloan = () => {
                         onChange={(e) => setRepaymentDate(e.target.value)}
                       />
                     </div>
-                    <div class="mb-3 col-md-6">
+                    <div class="mb-3 col-md-12">
                       <label class="form-label">Description</label>
                       <input
                         type="text"

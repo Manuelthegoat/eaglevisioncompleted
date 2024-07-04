@@ -109,6 +109,8 @@ const LoanApplication = () => {
       customerId: customerSelection,
       name: selectedCustomer.name, // Set the selected customer's name here
       amount: loanAmount,
+      disbursementAmount: loanAmount,
+      type: 'disbursement',
       interestRate: interestRate,
       loanStartDate: loanStartDate,
       loanEndDate: loanEndDate,
