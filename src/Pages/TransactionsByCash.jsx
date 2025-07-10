@@ -13,7 +13,7 @@ const TransactionsByCash = () => {
 
   useEffect(() => {
     fetch(
-      "https://eaglevision3.onrender.com/api/v1/transactions/transactions/cash", {
+      "https://api.eaglevisionmri.com/api/v1/transactions/transactions/cash", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

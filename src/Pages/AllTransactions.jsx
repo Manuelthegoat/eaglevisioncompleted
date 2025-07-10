@@ -44,7 +44,7 @@ const AllTransactions = () => {
     const token = localStorage.getItem("token"); // Replace 'your_token_key' with the actual key you use to store the token
 
     fetch(
-      "https://eaglevision3.onrender.com/api/v1/transactions/transactions", {
+      "https://api.eaglevisionmri.com/api/v1/transactions/transactions", {
       headers: {
         Authorization: `Bearer ${token}`,
       },

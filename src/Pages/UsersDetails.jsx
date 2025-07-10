@@ -12,7 +12,7 @@ const UsersDetails = () => {
 
   const { id } = useParams();
   useEffect(() => {
-    fetch(`https://eaglevision3.onrender.com/api/v1/users/${id}`, {
+    fetch(`https://api.eaglevisionmri.com/api/v1/users/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -28,7 +28,7 @@ const UsersDetails = () => {
         setUserDetails(data.data);
 
         fetch(
-          `https://eaglevision3.onrender.com/api/v1/transactions/getAllTransactionsByCollector?collectedBy=${data.data.lastName}`,
+          `https://api.eaglevisionmri.com/api/v1/transactions/getAllTransactionsByCollector?collectedBy=${data.data.lastName}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

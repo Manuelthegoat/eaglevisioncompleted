@@ -65,7 +65,7 @@ const AddCustomer = () => {
     const token = localStorage.getItem("token");
     try {
       const response = await fetch(
-        "https://eaglevision3.onrender.com/api/v1/customers",
+        "https://api.eaglevisionmri.com/api/v1/customers",
         {
           method: "POST",
           headers: {
@@ -98,7 +98,7 @@ const AddCustomer = () => {
   useEffect(() => {
     const token = localStorage.getItem("token"); // Replace 'your_token_key' with the actual key you use to store the token
 
-    fetch("https://eaglevision3.onrender.com/api/v1/users", {
+    fetch("https://api.eaglevisionmri.com/api/v1/users", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -123,7 +123,7 @@ const AddCustomer = () => {
   useEffect(() => {
     const token = localStorage.getItem("token"); // Replace 'your_token_key' with the actual key you use to store the token
 
-    fetch(`https://eaglevision3.onrender.com/api/v1/users/${cookies.userId}`, {
+    fetch(`https://api.eaglevisionmri.com/api/v1/users/${cookies.userId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

@@ -17,7 +17,7 @@ const Login = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        "https://eaglevision3.onrender.com/api/v1/users/login",
+        "https://api.eaglevisionmri.com/api/v1/users/login",
         {
           method: "POST",
           headers: {

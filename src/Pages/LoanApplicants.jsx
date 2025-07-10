@@ -35,10 +35,10 @@ const LoanApplicants = () => {
 
         if (startDate && endDate) {
           // If start and end dates are provided, fetch data for the date range
-          apiUrl = `https://eaglevision3.onrender.com/api/v1/loans/by-payment-date?startDate=${startDate}&endDate=${endDate}`;
+          apiUrl = `https://api.eaglevisionmri.com/api/v1/loans/by-payment-date?startDate=${startDate}&endDate=${endDate}`;
         } else {
           // If start and end dates are not provided, fetch all data
-          apiUrl = "https://eaglevision3.onrender.com/api/v1/loans";
+          apiUrl = "https://api.eaglevisionmri.com/api/v1/loans";
         }
 
         const token = localStorage.getItem("token");
@@ -113,7 +113,7 @@ const LoanApplicants = () => {
         const token = localStorage.getItem("token");
         try {
           const response = await fetch(
-            `https://eaglevision3.onrender.com/api/v1/loans/${loanId}`,
+            `https://api.eaglevisionmri.com/api/v1/loans/${loanId}`,
             {
               method: "DELETE",
               headers: {

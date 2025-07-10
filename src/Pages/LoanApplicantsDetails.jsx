@@ -24,7 +24,7 @@ const LoanApplicantsDetails = () => {
   const { id } = useParams();
   useEffect(() => {
     const token = localStorage.getItem("token");
-    fetch(`https://eaglevision3.onrender.com/api/v1/loans/${id}`, {
+    fetch(`https://api.eaglevisionmri.com/api/v1/loans/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -41,7 +41,7 @@ const LoanApplicantsDetails = () => {
 
         // fetch customer details using the id from loanApplicantsDetails.customer
         return fetch(
-          `https://eaglevision3.onrender.com/api/v1/customers/${data.data?.customer}`,
+          `https://api.eaglevisionmri.com/api/v1/customers/${data.data?.customer}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -71,7 +71,7 @@ const LoanApplicantsDetails = () => {
     // Fetch repayments using the customer id
     if (customerDetails) {
       fetch(
-        `https://eaglevision3.onrender.com/api/v1/loans/customer/${loanApplicantsDetails?.customer}/loans`,
+        `https://api.eaglevisionmri.com/api/v1/loans/customer/${loanApplicantsDetails?.customer}/loans`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

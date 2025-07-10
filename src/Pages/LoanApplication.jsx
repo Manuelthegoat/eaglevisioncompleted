@@ -49,7 +49,7 @@ const LoanApplication = () => {
   useEffect(() => {
     const token = localStorage.getItem("token"); // Replace 'your_token_key' with the actual key you use to store the token
 
-    fetch(`https://eaglevision3.onrender.com/api/v1/users/${cookies.userId}`, {
+    fetch(`https://api.eaglevisionmri.com/api/v1/users/${cookies.userId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -70,7 +70,7 @@ const LoanApplication = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    fetch("https://eaglevision3.onrender.com/api/v1/customers", {
+    fetch("https://api.eaglevisionmri.com/api/v1/customers", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -150,7 +150,7 @@ const LoanApplication = () => {
     try {
 
       const response = await fetch(
-        "https://eaglevision3.onrender.com/api/v1/loans/disbursement",
+        "https://api.eaglevisionmri.com/api/v1/loans/disbursement",
         {
           method: "POST",
           headers: {

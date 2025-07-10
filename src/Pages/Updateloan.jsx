@@ -53,7 +53,7 @@ const Updateloan = () => {
 
     try {
       const response = await fetch(
-        `https://eaglevision3.onrender.com/api/v1/loans/${id}/update`,
+        `https://api.eaglevisionmri.com/api/v1/loans/${id}/update`,
         {
           method: "PATCH",
           headers: {
@@ -86,7 +86,7 @@ const Updateloan = () => {
   };
 
   useEffect(() => {
-    fetch("https://eaglevision3.onrender.com/api/v1/users", {
+    fetch("https://api.eaglevisionmri.com/api/v1/users", {
       headers: {
         Authorization: `Bearer ${token}`,
       },

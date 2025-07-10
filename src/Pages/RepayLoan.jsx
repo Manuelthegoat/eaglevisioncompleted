@@ -29,7 +29,7 @@ const RepayLoan = () => {
   // const deleteLoan = async () => {
   //   try {
   //     const response = await fetch(
-  //       `https://eaglevision3.onrender.com/api/v1/loans/${id}`,
+  //       `https://api.eaglevisionmri.com/api/v1/loans/${id}`,
   //       {
   //         method: "DELETE",
   //         headers: {
@@ -53,7 +53,7 @@ const RepayLoan = () => {
   useEffect(() => {
     const token = localStorage.getItem("token"); // Replace 'your_token_key' with the actual key you use to store the token
 
-    fetch(`https://eaglevision3.onrender.com/api/v1/users/${cookies.userId}`, {
+    fetch(`https://api.eaglevisionmri.com/api/v1/users/${cookies.userId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -75,7 +75,7 @@ const RepayLoan = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    fetch(`https://eaglevision3.onrender.com/api/v1/loans/${id}`, {
+    fetch(`https://api.eaglevisionmri.com/api/v1/loans/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -92,7 +92,7 @@ const RepayLoan = () => {
 
         // fetch customer details using the id from loanApplicantsDetails.customer
         return fetch(
-          `https://eaglevision3.onrender.com/api/v1/customers/${data.data.customer}`,
+          `https://api.eaglevisionmri.com/api/v1/customers/${data.data.customer}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -150,7 +150,7 @@ const RepayLoan = () => {
 
     try {
       const response = await fetch(
-        `https://eaglevision3.onrender.com/api/v1${postEndpoint}`,
+        `https://api.eaglevisionmri.com/api/v1${postEndpoint}`,
         {
           method: "POST",
           headers: {
@@ -183,7 +183,7 @@ const RepayLoan = () => {
     }
   };
   useEffect(() => {
-    fetch("https://eaglevision3.onrender.com/api/v1/users", {
+    fetch("https://api.eaglevisionmri.com/api/v1/users", {
       headers: {
         Authorization: `Bearer ${token}`,
       },

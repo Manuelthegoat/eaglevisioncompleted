@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import ReactPaginate from "react-paginate";
 import Swal from "sweetalert2";
+import * as XLSX from "xlsx";
 
 const SavingsList = () => {
   const [customers, setCustomers] = useState([]);
@@ -15,12 +16,19 @@ const SavingsList = () => {
   const [pageNumber, setPageNumber] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchQuery2, setSearchQuery2] = useState("");
+  const [selectedBalanceDate, setSelectedBalanceDate] = useState(null);
+  const [customerBalances, setCustomerBalances] = useState({});
 
   const customersPerPage = 10;
   const pagesVisited = pageNumber * customersPerPage;
   const token = localStorage.getItem("token");
+
+  const handleBalanceDateChange = (event) => {
+    setSelectedBalanceDate(event.target.value);
+  };
   useEffect(() => {
-    fetch("https://eaglevision3.onrender.com/api/v1/customers", {
+    setLoading(true); // Show loader when fetching data
+    fetch("https://api.eaglevisionmri.com/api/v1/customers", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -44,14 +52,18 @@ const SavingsList = () => {
         console.log("Error fetching data: ", error);
         toast.error("Customer Failed To Fetched");
       })
-      .finally(() => setLoading(false)); // Set loading to false here, after success or error
+      .finally(() => setLoading(false)); // Hide loader after fetching data
   }, [pageNumber]);
 
   const pageCount = Math.ceil(customers.length / customersPerPage);
-
   const changePage = ({ selected }) => {
+   
     setPageNumber(selected);
+  
+    // Simulate a delay to show the loader (optional, but useful for testing)
+   
   };
+
 
   const deleteCustomer = (customerId) => {
     // Show confirmation dialog using SweetAlert
@@ -66,15 +78,12 @@ const SavingsList = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         setDeleting(true);
-        fetch(
-          `https://eaglevision3.onrender.com/api/v1/customers/${customerId}`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
+        fetch(`https://api.eaglevisionmri.com/api/v1/customers/${customerId}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
           .then((response) => {
             if (!response.ok) {
               throw new Error("Network response was not ok");
@@ -123,6 +132,7 @@ const SavingsList = () => {
     );
     setDisplayedCustomers(filteredCustomers);
   };
+
   const handleSearchName = (event) => {
     setSearchQuery2(event.target.value);
     const filteredCustomers = allCustomers.filter((customer) =>
@@ -136,45 +146,198 @@ const SavingsList = () => {
     return new Date(dateString).toDateString(undefined, options);
   };
 
+const exportToExcel = async () => {
+  if (!selectedBalanceDate) {
+    toast.error("Please select a date first");
+    return;
+  }
+
+  setLoading(true);
+  const toastId = toast.loading("🔄 Preparing export...", { autoClose: false });
+
+  try {
+    // Initialize Excel workbook
+    const workbook = XLSX.utils.book_new();
+    
+    // Process in batches
+    const BATCH_SIZE = 50;
+    let allRows = [];
+    
+    for (let i = 0; i < allCustomers.length; i += BATCH_SIZE) {
+      const batch = allCustomers.slice(i, i + BATCH_SIZE);
+      toast.update(toastId, { 
+        render: `📦 Processing ${Math.min(i + BATCH_SIZE, allCustomers.length)}/${allCustomers.length} records...` 
+      });
+
+      const batchRows = await Promise.all(
+        batch.map(async (customer) => {
+          try {
+            // Fetch transactions for balance calculation
+            const response = await fetch(
+              `https://api.eaglevisionmri.com/api/v1/customers/${customer._id}/transactions`,
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            const transactions = await response.json();
+            
+            // Calculate balance for selected date
+            const balanceOnDate = transactions
+              .filter(t => new Date(t.paymentDate).toDateString() === new Date(selectedBalanceDate).toDateString())
+              .slice(-1)[0]?.balance || customer.accountBalance;
+
+            // Create a new object with ALL original fields + calculated balance
+            return {
+              ...customer,
+              balanceOnSelectedDate: balanceOnDate
+            };
+          } catch (error) {
+            console.error(`Failed to process ${customer.accountNumber}:`, error);
+            return {
+              ...customer,
+              balanceOnSelectedDate: "Error"
+            };
+          }
+        })
+      );
+
+      allRows = [...allRows, ...batchRows];
+      await new Promise(resolve => setTimeout(resolve, 100)); // Prevent UI freeze
+    }
+
+    // Create worksheet with all data
+    const worksheet = XLSX.utils.json_to_sheet(allRows);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Customers");
+    
+    // Export
+    XLSX.writeFile(workbook, `Full_Customer_Export_${selectedBalanceDate}.xlsx`);
+    toast.update(toastId, {
+      render: `✅ Success! Exported ${allRows.length} records`,
+      type: "success",
+      autoClose: 5000,
+      isLoading: false
+    });
+
+  } catch (error) {
+    toast.update(toastId, {
+      render: `❌ Export failed: ${error.message}`,
+      type: "error",
+      autoClose: 5000,
+      isLoading: false
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+  const fetchBalancesForDate = async () => {
+    if (!selectedBalanceDate) {
+      toast.error("Please select a date");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const balances = {};
+
+      // Fetch transactions for each displayed customer
+      for (const customer of displayedCustomers) {
+        const response = await fetch(
+          `https://api.eaglevisionmri.com/api/v1/customers/${customer._id}/transactions`, // Assuming the endpoint returns transactions
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch transactions");
+        }
+
+        const data = await response.json();
+        console.log("Transactions for customer:", customer._id, data);
+
+        // Filter transactions for the selected date
+        const transactionsOnDate = data.filter((transaction) => {
+          const transactionDate = new Date(
+            transaction.paymentDate
+          ).toDateString();
+          const selectedDate = new Date(selectedBalanceDate).toDateString();
+          return transactionDate === selectedDate;
+        });
+
+        console.log("Transactions on selected date:", transactionsOnDate);
+
+        // Calculate the available balance for the selected date
+        if (transactionsOnDate.length > 0) {
+          // Use the last transaction's balance for the selected date
+          balances[customer._id] =
+            transactionsOnDate[transactionsOnDate.length - 1].balance;
+        } else {
+          // If no transaction is found, use the last available balance
+          balances[customer._id] = customer.accountBalance;
+        }
+      }
+
+      console.log("Balances:", balances);
+      setCustomerBalances(balances);
+    } catch (error) {
+      console.error("Error fetching balances:", error);
+      toast.error("Failed to fetch balances");
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    setCustomerBalances({}); // Reset balances when customers are fetched
+  }, [allCustomers]);
+
   return (
     <>
       {loading && <Loader />}
       {deleting && <Loader />}
+      <ToastContainer />
       <div className="card">
         <div className="card-header">
-          <h4 class="card-title">All Savings</h4>
+          <h4 className="card-title">All Savings</h4>
 
-          <div class="d-flex align-items-center flex-wrap flex-sm-nowrap">
-            <div class="mb-3 mt-2 mx-sm-2">
-              <label class="sr-only">Search</label>
+          {/* <div className="d-flex align-items-center flex-wrap flex-sm-nowrap">
+            <div className="mb-3 mt-2 mx-sm-2">
+              <label className="sr-only">Search</label>
               <input
                 type="date"
-                class="form-control"
+                className="form-control"
                 placeholder="Search"
                 onChange={handleDateChange}
               />{" "}
             </div>
             &nbsp;
-            <button type="submit" class="btn btn-primary mb-2">
+            <button type="submit" className="btn btn-primary mb-2">
               Filter By Date
+            </button>
+          </div> */}
+          <div className="d-flex align-items-center flex-wrap flex-sm-nowrap">
+            <div className="mb-3 mt-2 mx-sm-2">
+              <label className="sr-only">Select Date for Balance</label>
+              <input
+                type="date"
+                className="form-control"
+                placeholder="Select Date for Balance"
+                onChange={handleBalanceDateChange}
+              />
+            </div>
+            &nbsp;
+            <button
+              type="button"
+              className="btn btn-primary mb-2"
+              onClick={fetchBalancesForDate}
+            >
+              Fetch Balances
             </button>
           </div>
 
-          {/* <form class="d-flex align-items-center flex-wrap flex-sm-nowrap">
-            <div class="mb-3 mt-2 mx-sm-2">
-              <label class="sr-only">Search</label>
-              <input type="date" class="form-control" placeholder="Search" />
-              <input type="date" class="form-control" placeholder="Search" />
-            </div>
-            &nbsp;
-            <button type="submit" class="btn btn-primary mb-2">
-              Search by Payment date
-            </button>
-           
-          </form> */}
-          <form class="d-flex align-items-center flex-wrap flex-sm-nowrap">
-            <div class="mb-3 mt-2 mx-sm-2">
-              <label class="sr-only">Search</label>
+          <div className="d-flex align-items-center flex-wrap flex-sm-nowrap">
+            <div className="mb-3 mt-2 mx-sm-2">
+              <label className="sr-only">Search</label>
               <input
                 type="text"
                 className="form-control"
@@ -184,8 +347,8 @@ const SavingsList = () => {
               />
             </div>
             &nbsp;
-            <div class="mb-3 mt-2 mx-sm-2">
-              <label class="sr-only">Search By Name</label>
+            <div className="mb-3 mt-2 mx-sm-2">
+              <label className="sr-only">Search By Name</label>
               <input
                 type="text"
                 className="form-control"
@@ -195,12 +358,14 @@ const SavingsList = () => {
               />
             </div>
             &nbsp;
-            <button type="submit" class="btn btn-primary mb-2">
+            <button type="submit" className="btn btn-primary mb-2">
               Search
             </button>
             &nbsp;&nbsp;
-            <button className="btn btn-primary mb-2">Export As Excel</button>
-          </form>
+            <button className="btn btn-primary mb-2" onClick={exportToExcel}>
+              Export As Excel
+            </button>
+          </div>
         </div>
         <div className="card-body">
           <div class="table-responsive">
@@ -220,7 +385,12 @@ const SavingsList = () => {
                     <strong>Phone No</strong>
                   </th>
                   <th>
-                    <strong>Avail Balance(&#8358;)</strong>
+                    <strong>
+                      Balance on {selectedBalanceDate || "Selected Date"}
+                    </strong>
+                  </th>
+                  <th>
+                    <strong>Today's Balance(&#8358;)</strong>
                   </th>
                   <th>
                     <strong>Account Officer</strong>
@@ -247,6 +417,11 @@ const SavingsList = () => {
                     </td>
                     <td>{customer.accountNumber}</td>
                     <td>{customer.customersPhoneNo}</td>
+                    <td>
+                      {customerBalances[customer._id] !== undefined
+                        ? customerBalances[customer._id]
+                        : "N/A"}
+                    </td>
                     <td>{customer.accountBalance}</td>
                     <td>{customer.officerIncharge}</td>
                     <td>{formatDate(customer.createdAt)}</td>
@@ -316,4 +491,4 @@ const SavingsList = () => {
   );
 };
 
-export default SavingsList;
+export default SavingsList
