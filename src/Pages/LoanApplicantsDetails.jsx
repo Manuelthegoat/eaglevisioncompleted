@@ -5,6 +5,10 @@ import { ToastContainer, toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import ReactPaginate from "react-paginate";
 import Swal from "sweetalert2";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import logo from "../Assets/logofull.png"; // adjust path as needed
+
 
 const LoanApplicantsDetails = () => {
   const [loading, setLoading] = useState(true);
@@ -111,59 +115,77 @@ const LoanApplicantsDetails = () => {
     return word?.charAt(0)?.toUpperCase() + word?.slice(1);
   }
 
-  const exportToExcel = () => {
-    const formattedData = repayments.map((loanitem, index) => [
+const exportToExcel = () => {
+  const doc = new jsPDF();
+
+  // Optional logo
+  doc.addImage(logo, "PNG", 150, 10, 40, 15);
+  doc.setFontSize(16);
+  doc.text("Eagle Vision Mutual Resources", 14, 25);
+
+  doc.setFontSize(8);
+  doc.text("No 6, Post Office Road Mushin Lagos", 14, 30);
+
+    doc.setFontSize(10);
+  doc.text("Loan Repayment Report", 14, 35);
+
+  const headers = [
+    [
+      "#",
+      "Payment Date",
+      "Description",
+      "Debit",
+      "Credit",
+      "Interest Rate",
+      "Balance",
+      "Start Date",
+      "End Date",
+      "Uploaded By",
+      "Created At",
+      "Updated At",
+    ],
+  ];
+
+  const rows = repayments.map((loanitem, index) => {
+    const debit =
+      loanitem.status === "withdrawn"
+        ? loanitem.amount?.toLocaleString("en-US", { minimumFractionDigits: 2 })
+        : "--------";
+
+    const credit =
+      loanitem.status === "deposited"
+        ? loanitem.amount?.toLocaleString("en-US", { minimumFractionDigits: 2 })
+        : "--------";
+
+    return [
       index + 1,
-      `{new Date(loanitem.paymentDate).toDateString()}`,
-      `{loanitem.type === 'withdrawal' ? 'Withdrawal' : 'Deposit'}`,
+      new Date(loanitem.paymentDate).toDateString(),
+      loanitem.type === "withdrawal" ? "Withdrawal" : "Deposit",
+      debit,
+      credit,
+      loanitem.interestRate || 0,
+      loanitem.balance?.toLocaleString("en-US", { minimumFractionDigits: 2 }) || 0,
+      new Date(loanitem.loanStartDate).toDateString(),
+      new Date(loanitem.loanEndDate).toDateString(),
+      loanitem.uploadedBy || "N/A",
+      new Date(loanitem.createdAt).toLocaleString(),
+      new Date(loanitem.updatedAt).toLocaleString(),
+    ];
+  });
 
-      `{loanitem.status === "withdrawn" ? (
-    <>
-      {repayment.amount?.toLocaleString("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}
-    </>
-  ) : (
-    <>--------</>
-  )}`,
-      `{loanitem.status === "deposited" ? (
-      <>
-        {repayment.amount?.toLocaleString("en-US", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}
-      </>
-    ) : (
-      <>--------</>
-    )}`,
-      loanitem.interestRate,
-      loanitem.balance,
-      loanitem.loanEndDate,
-      loanitem.uploadedBy,
-      `{new Date(loanitem.createdAt).toLocaleString()}`,
-      `{new Date(loanitem.updatedAt).toLocaleString()}`,
-    ]);
+  autoTable(doc, {
+    startY: 40,
+    head: headers,
+    body: rows,
+    theme: "striped",
+    styles: {
+      fontSize: 8,
+    },
+  });
 
-    const ws = XLSX.utils.aoa_to_sheet([
-      [
-        "#",
-        "Payment Date",
-        "Description",
-        "Mode",
-        "Debit",
-        "Credit",
-        "interest Amount",
-        "Balance",
-        "Created At",
-        "Updated At",
-      ],
-      ...formattedData,
-    ]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Loan Data");
-    XLSX.writeFile(wb, "Eagle Vision Loan Repayments.xlsx");
-  };
+  doc.save("EagleVision_Loan_Repayments.pdf");
+};
+
   function addCommas(number) {
     return number?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }

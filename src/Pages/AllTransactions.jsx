@@ -169,6 +169,9 @@ const AllTransactions = () => {
                     <th>
                       <strong>AMT (₦)</strong>
                     </th>
+                    <th>
+                      <strong>BALANCE (₦)</strong>
+                    </th>
 
                     <th>
                       <strong>PAYMENT DATE</strong>
@@ -196,6 +199,7 @@ const AllTransactions = () => {
                         <td>{index + 1}</td>
                         <td>{item.name || item.customer}</td>
                         <td>₦ {item.amount}</td>
+                        <td>₦ {item.balance}</td>
                         <td>
                           {new Date(item.paymentDate).toDateString()}
                         </td>

@@ -3,7 +3,9 @@ import { Link, useParams } from "react-router-dom";
 import Loader from "../Components/Loader/Loader";
 import { ToastContainer, toast } from "react-toastify";
 import ReactPaginate from "react-paginate";
-import Swal from "sweetalert2";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import Img from '../Assets/logofull.png'
 
 import * as XLSX from "xlsx";
 
@@ -18,6 +20,7 @@ const CustomerProfile = () => {
   const [allCustomers, setAllCustomers] = useState([]); // stores all fetched data
   const [displayedCustomers, setDisplayedCustomers] = useState([]); // stores data currently displayed in table
   const [pageNumber, setPageNumber] = useState(0);
+  const imgData = Img;
 
   const customersPerPage = 10;
   const pagesVisited = pageNumber * customersPerPage;
@@ -155,62 +158,78 @@ const CustomerProfile = () => {
       console.log("Matching Loan ID:", loanId);
     }
   }, [loans, id]);
-  const exportToExcel = () => {
-    const formattedData = filteredTransactions.map((loanitem, index) => [
-      index + 1,
-      `{new Date(loanitem.paymentDate).toDateString()}`,
-      `{loanitem.description ? loanitem.description : "N/A"}`,
+const exportToExcel = () => {
+  const doc = new jsPDF();
 
-      `{loanitem.type?.toUpperCase()}`,
-      ` {loanitem.choose === "Debit" ? (
-        <>
-          {transact.amount?.toLocaleString("en-US", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}
-        </>
-      ) : (
-        <>--------</>
-      )}`,
-      `{loanitem.choose === "credit" ? (
-        <>
-          {transact.amount?.toLocaleString("en-US", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}
-        </>
-      ) : (
-        <>--------</>
-      )}`,
-      loanitem.modeOfPayment,
-      loanitem.balance,
-      loanitem.collectedBy,
-      loanitem.uploadedBy,
-      `{new Date(loanitem.createdAt).toLocaleString()}`,
-      `{new Date(repayment.updatedAt).toLocaleString()}`,
-    ]);
+  doc.addImage(imgData, "PNG", 150, 10, 40, 15);
+  doc.setFontSize(16);
+  doc.text("Eagle Vision Mutual Resources", 14, 25);
 
-    const ws = XLSX.utils.aoa_to_sheet([
-      [
-        "#",
-        "Payment Date",
-        "Description",
-        "Type",
-        "Debit",
-        "Credit",
-        "Mode",
-        "Balance",
-        "Collected By",
-        "Uploaded By",
-        "Created At",
-        "Updated At",
-      ],
-      ...formattedData,
-    ]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Loan Data");
-    XLSX.writeFile(wb, "Eagle Vision Loan Repayments.xlsx");
-  };
+  doc.setFontSize(8);
+  doc.text("No 6, Post Office Road Mushin Lagos", 14, 30);
+
+    doc.setFontSize(10);
+  doc.text("Loan Repayment Report", 14, 35);
+
+  const headers = [
+    [
+      "Payment Date",
+      "Description",
+      "Debit",
+      "Credit",
+      "Mode",
+      "Balance",
+      "Collected By",
+      "Uploaded By",
+      "Created At",
+      "Updated At",
+    ],
+  ];
+
+  // ✅ Export ALL filtered data (not paginated)
+  const allFiltered = transactions.filter((transact) => {
+    if (selectedMode === "all") return true;
+    return transact.modeOfPayment === selectedMode;
+  });
+
+  const data = allFiltered.map((transact) => {
+    const debit =
+      transact.choose === "Debit"
+        ? transact.amount?.toLocaleString("en-US", { minimumFractionDigits: 2 })
+        : "--------";
+
+    const credit =
+      transact.choose === "credit"
+        ? transact.amount?.toLocaleString("en-US", { minimumFractionDigits: 2 })
+        : "--------";
+
+    return [
+      transact.paymentDate
+        ? new Date(transact.paymentDate).toDateString()
+        : "N/A",
+      transact.description || "N/A",
+      debit,
+      credit,
+      transact.modeOfPayment || "N/A",
+      transact.balance?.toLocaleString("en-US", { minimumFractionDigits: 2 }) || "",
+      transact.collectedBy || "N/A",
+      transact.uploadedBy || "N/A",
+      new Date(transact.createdAt).toDateString(),
+      new Date(transact.updatedAt).toDateString(),
+    ];
+  });
+
+  autoTable(doc, {
+    startY: 40,
+    head: headers,
+    body: data,
+    styles: { fontSize: 8 },
+    theme: "striped",
+  });
+
+  doc.save("EagleVision_Loan_Transactions.pdf");
+};
+
 
   function addCommas(number) {
     return number?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
