@@ -121,13 +121,18 @@ const exportToExcel = () => {
   // Optional logo
   doc.addImage(logo, "PNG", 150, 10, 40, 15);
   doc.setFontSize(16);
-  doc.text("Eagle Vision Mutual Resources", 14, 25);
+  doc.text("Eagle Vision Mutual Resources Investment Limited", 14, 25);
 
   doc.setFontSize(8);
   doc.text("No 6, Post Office Road Mushin Lagos", 14, 30);
 
     doc.setFontSize(10);
   doc.text("Loan Repayment Report", 14, 35);
+    if (customerDetails?.name) {
+    doc.setFontSize(10);
+    doc.text(`Customer: ${customerDetails.name}`, 14, 40);
+  }
+  
 
   const headers = [
     [
@@ -174,7 +179,7 @@ const exportToExcel = () => {
   });
 
   autoTable(doc, {
-    startY: 40,
+    startY: 42,
     head: headers,
     body: rows,
     theme: "striped",

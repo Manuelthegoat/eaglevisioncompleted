@@ -11,9 +11,9 @@ const LoanApplicants = () => {
   const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [customerData, setCustomerData] = useState(null);
+  const [customerData, setCustomerData] = useState({}); // Stores customer data by ID
   const [selectedDate, setSelectedDate] = useState(null);
-  const [allCustomers, setAllCustomers] = useState([]); // stores all fetched data
+  const [allCustomers, setAllCustomers] = useState([]);
   const [displayedCustomers, setDisplayedCustomers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchQuery2, setSearchQuery2] = useState("");
@@ -26,6 +26,44 @@ const LoanApplicants = () => {
     return number?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
 
+  // Fetch customer data by ID
+  const fetchCustomerData = async (customerId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `https://api.eaglevisionmri.com/api/v1/customers/${customerId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error("Error fetching customer data: ", error);
+      return null;
+    }
+  };
+
+  // Fetch all customer data for the loans
+  const fetchAllCustomerData = async (loanItems) => {
+    const customerDataMap = {};
+    
+    await Promise.all(
+      loanItems.map(async (loan) => {
+        if (loan.customer) {
+          const customer = await fetchCustomerData(loan.customer);
+          if (customer) {
+            customerDataMap[loan.customer] = customer;
+          }
+        }
+      })
+    );
+    
+    setCustomerData(customerDataMap);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -34,10 +72,8 @@ const LoanApplicants = () => {
         let apiUrl;
 
         if (startDate && endDate) {
-          // If start and end dates are provided, fetch data for the date range
           apiUrl = `https://api.eaglevisionmri.com/api/v1/loans/by-payment-date?startDate=${startDate}&endDate=${endDate}`;
         } else {
-          // If start and end dates are not provided, fetch all data
           apiUrl = "https://api.eaglevisionmri.com/api/v1/loans";
         }
 
@@ -70,6 +106,9 @@ const LoanApplicants = () => {
             ?.slice(pagesVisited, pagesVisited + customersPerPage)
         );
 
+        // Fetch customer data for all loans
+        await fetchAllCustomerData(uniqueLoans);
+
         toast.success("Fetched All");
       } catch (error) {
         console.error("Error fetching data: ", error);
@@ -96,10 +135,10 @@ const LoanApplicants = () => {
       return addCommas(sum);
     }
 
-    return "N/A"; // or some other default value if the conversion fails
+    return "N/A";
   }
+
   const deleteLoan = async (loanId) => {
-    // Show confirmation dialog using SweetAlert
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -149,13 +188,12 @@ const LoanApplicants = () => {
   const exportToExcel = () => {
     const formattedData = loans.map((loanitem, index) => [
       index + 1,
-      customerData
-        ? `${customerData[index]?.name}\n${customerData[index]?.customersPhoneNo}`
+      customerData[loanitem.customer] 
+        ? `${customerData[loanitem.customer]?.name}\n${customerData[loanitem.customer]?.customersPhoneNo}`
         : "Loading customer data...",
       `₦ ${loanitem.amount}`,
       `₦ ${loanitem.interestRate}`,
       `₦ ${safeSumAndFormat(loanitem.amount, loanitem.interestRate)}`,
-      // ... (add more columns as needed)
       loanitem.balance,
       loanitem.paymentDate
         ? new Date(loanitem.paymentDate).toDateString()
@@ -182,10 +220,10 @@ const LoanApplicants = () => {
     XLSX.utils.book_append_sheet(wb, ws, "Loan Data");
     XLSX.writeFile(wb, "Eagle Vision Loan Report.xlsx");
   };
+
   const handleDateChange = (event) => {
     setSelectedDate(event.target.value);
 
-    // Immediately filter the data when a date is selected
     const date = new Date(event.target.value);
     const filteredCustomers = allCustomers.filter((customer) => {
       const customerCreatedAt = new Date(customer.paymentDate);
@@ -194,11 +232,13 @@ const LoanApplicants = () => {
 
     setDisplayedCustomers(filteredCustomers);
   };
+
   const handleSearchName = (event) => {
     setSearchQuery2(event.target.value);
-    const filteredCustomers = allCustomers.filter((customer) =>
-      customer.name?.toLowerCase()?.includes(event.target.value.toLowerCase())
-    );
+    const filteredCustomers = allCustomers.filter((customer) => {
+      const customerName = customerData[customer.customer]?.name?.toLowerCase() || "";
+      return customerName.includes(event.target.value.toLowerCase());
+    });
     setDisplayedCustomers(filteredCustomers);
   };
 
@@ -209,18 +249,18 @@ const LoanApplicants = () => {
       <div className="card">
         <div className="card-header">
           <h4 className="card-title">Loan Application List</h4>
-          <div class="d-flex align-items-center flex-wrap flex-sm-nowrap">
-            <div class="mb-3 mt-2 mx-sm-2">
-              <label class="sr-only">Search</label>
+          <div className="d-flex align-items-center flex-wrap flex-sm-nowrap">
+            <div className="mb-3 mt-2 mx-sm-2">
+              <label className="sr-only">Search</label>
               <input
                 type="date"
-                class="form-control"
+                className="form-control"
                 placeholder="Search"
                 onChange={handleDateChange}
               />{" "}
             </div>
             &nbsp;
-            <button type="submit" class="btn btn-primary mb-2">
+            <button type="submit" className="btn btn-primary mb-2">
               Filter By Payment Date
             </button>
           </div>
@@ -228,15 +268,13 @@ const LoanApplicants = () => {
           <button
             type="button"
             className="btn btn-primary mb-2"
-            onClick={() => {
-              exportToExcel();
-            }}
+            onClick={exportToExcel}
           >
             EXPORT AS EXCEL
           </button>
-          <form class="d-flex align-items-center flex-wrap flex-sm-nowrap">
-            <div class="mb-3 mt-2 mx-sm-2">
-              <label class="sr-only">Search By Name</label>
+          <form className="d-flex align-items-center flex-wrap flex-sm-nowrap">
+            <div className="mb-3 mt-2 mx-sm-2">
+              <label className="sr-only">Search By Name</label>
               <input
                 type="text"
                 className="form-control"
@@ -246,11 +284,9 @@ const LoanApplicants = () => {
               />
             </div>
             &nbsp;
-            <button type="submit" class="btn btn-primary mb-2">
+            <button type="submit" className="btn btn-primary mb-2">
               Search
             </button>
-            &nbsp;&nbsp;
-            <button className="btn btn-primary mb-2">Export As Excel</button>
           </form>
         </div>
         <div className="card-body">
@@ -267,7 +303,6 @@ const LoanApplicants = () => {
                   <th>
                     <strong>Total Amt Approved (&#8358;)</strong>
                   </th>
-
                   <th>
                     <strong>Total Interest</strong>
                   </th>
@@ -280,7 +315,6 @@ const LoanApplicants = () => {
                   <th>
                     <strong>Balance</strong>
                   </th>
-
                   <th>
                     <strong>Payment Date</strong>
                   </th>
@@ -305,9 +339,9 @@ const LoanApplicants = () => {
                     <td>
                       <Link
                         to={`/loan-applicants-details/${loanitem._id}`}
-                        class="dropdown-item"
+                        className="dropdown-item"
                       >
-                        {loanitem.name}
+                        {customerData[loanitem.customer]?.name || "Loading..."}
                       </Link>
                       {loanitem.loanTitle}
                     </td>
@@ -322,11 +356,10 @@ const LoanApplicants = () => {
                         : loanitem.status === "withdrawn"
                         ? "-"
                         : "+"}
-                    </td>{" "}
+                    </td>
                     <td>&#8358; {addCommas(loanitem.amount)}</td>
                     <td>&#8358;{addCommas(loanitem.balance)}</td>
                     <td>
-                      {" "}
                       {loanitem.paymentDate
                         ? new Date(loanitem.paymentDate).toDateString()
                         : "N/A"}
@@ -349,9 +382,9 @@ const LoanApplicants = () => {
                           >
                             <g
                               stroke="none"
-                              stroke-width="1"
+                              strokeWidth="1"
                               fill="none"
-                              fill-rule="evenodd"
+                              fillRule="evenodd"
                             >
                               <rect x="0" y="0" width="24" height="24" />
                               <circle fill="#000000" cx="5" cy="12" r="2" />
@@ -363,17 +396,16 @@ const LoanApplicants = () => {
                         <div className="dropdown-menu">
                           <Link
                             to={`/loan-applicants-details/${loanitem._id}`}
-                            class="dropdown-item"
+                            className="dropdown-item"
                           >
                             View Details
                           </Link>
                           <Link
                             to={`/edit-loan/${loanitem._id}`}
-                            class="dropdown-item"
+                            className="dropdown-item"
                           >
                             Edit
                           </Link>
-
                           <a
                             className="dropdown-item"
                             onClick={() => deleteLoan(loanitem._id)}
